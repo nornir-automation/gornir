@@ -6,18 +6,19 @@ import (
 	"github.com/nornir-automation/gornir/pkg/gornir"
 )
 
-type SequenceParams struct {
+// ParallelRunner will run each task over the hosts in parallel using a goroutines per Host
+type ParallelRunner struct {
 	wg *sync.WaitGroup
 }
 
-func Sequence() *SequenceParams {
-	return &SequenceParams{
+func Parallel() *ParallelRunner {
+	return &ParallelRunner{
 		wg: &sync.WaitGroup{},
 	}
 }
 
-func (r SequenceParams) Run(ctx gornir.Context, task gornir.Task, results chan *gornir.JobResult) error {
-	logger := ctx.Logger().WithField("runFunc", gornir.GetFunctionName(task))
+func (r ParallelRunner) Run(ctx gornir.Context, task gornir.Task, results chan *gornir.JobResult) error {
+	logger := ctx.Logger().WithField("runFunc", getFunctionName(task))
 	logger.Debug("starting runner")
 
 	gr := ctx.Gornir()
@@ -34,11 +35,11 @@ func (r SequenceParams) Run(ctx gornir.Context, task gornir.Task, results chan *
 	return nil
 }
 
-func (r SequenceParams) Wait() error {
+func (r ParallelRunner) Wait() error {
 	r.wg.Wait()
 	return nil
 }
 
-func (r SequenceParams) Close() error {
+func (r ParallelRunner) Close() error {
 	return nil
 }

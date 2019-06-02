@@ -3,7 +3,7 @@ version: '2.1'
 
 services:
     gornir:
-        image: golang:1.12-alpine
+        image: golang:1.12-stretch
         extra_hosts:
             - "dev1.group_1:10.21.33.101"
             - "dev2.group_1:10.21.33.102"
@@ -13,6 +13,8 @@ services:
             - "httpbin:10.21.33.201"
         volumes:
             - .:/go/src/github.com/nornir-automation/gornir
+        ports:
+            - "6060:6060"
         networks:
             net1:
                 ipv4_address: 10.21.33.2

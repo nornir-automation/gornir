@@ -7,14 +7,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Logrus uses github.com/sirupsen/logrus to log messages
 type Logrus struct {
 	logger *log.Entry
 }
 
-func NewLogrus() *Logrus {
+// NewLogrus instantiates a new Logrus logger
+func NewLogrus(debug bool) *Logrus {
 	logger := &log.Logger{}
 	logger.SetFormatter(&log.TextFormatter{})
-	logger.SetLevel(log.DebugLevel)
+	if debug {
+		logger.SetLevel(log.DebugLevel)
+	} else {
+		logger.SetLevel(log.InfoLevel)
+	}
 	logger.SetOutput(os.Stdout)
 	return &Logrus{logger: log.NewEntry(logger)}
 }

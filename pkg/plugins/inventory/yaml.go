@@ -5,10 +5,24 @@ import (
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 
-	"gopkg.in/yaml.v2"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
+// FromYAMLFile will instantiate the inventory from a YAML file. The
+// contents of the YAML file follow the same structure as the structs
+// but in lower case. For instance:
+//     dev1.group_1:
+//         port: 22
+//         hostname: dev1.group_1
+//         username: root
+//         password: docker
+//
+//     dev2.group_1:
+//         port: 22
+//         hostname: dev2.group_1
+//         username: root
+//         password: docker
 func FromYAMLFile(hostsFile string) (*gornir.Inventory, error) {
 	b, err := ioutil.ReadFile(hostsFile)
 	if err != nil {

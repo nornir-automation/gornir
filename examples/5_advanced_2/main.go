@@ -1,3 +1,5 @@
+// In this example we can see how we can call the runner asynchronously
+// and process the results without having to wait for all the hosts to complete
 package main
 
 import (
@@ -12,9 +14,9 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus()
+	logger := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("hosts.yaml")
+	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -26,7 +28,9 @@ func main() {
 
 	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
-	rnr := runner.Sequence()
+	rnr := runner.Parallel()
+
+	// The following call will not block
 	err = gr.RunA(
 		"What's my hostname?",
 		rnr,
@@ -37,20 +41,24 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	c := make(chan struct{})
+	// This goroutine is going to wait for the runner
+	// to complete and close the channel when done
 	go func() {
-		defer close(c)
 		defer close(results)
-		_ = rnr.Wait()
-		c <- struct{}{}
+		rnr.Wait()
 	}()
 
+	// While the previous goroutine is waiting for the
+	// runner to complete we can start processing
+	// the results as they show up
 	for {
 		select {
-		case res := <-results:
+		case res, ok := <-results:
+			if !ok {
+				// channel is closed
+				return
+			}
 			fmt.Println(res)
-		case <-c:
-			return
 		case <-time.After(time.Second * 10):
 			return
 		}

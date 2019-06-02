@@ -1,42 +1,44 @@
 package task
 
 import (
+	"bytes"
+	"fmt"
 	"sync"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 
 	"github.com/pkg/errors"
-
-	"bytes"
-	"fmt"
 	"golang.org/x/crypto/ssh"
 )
 
+// RemoteCommand will connect to the Host via ssh and execute the given command
 type RemoteCommand struct {
-	Command string
+	Command string // Command to execute
 }
 
+// RemoteCommandResults will be accessible via JobResult.Data()
 type RemoteCommandResults struct {
-	Stdout []byte
-	Stderr []byte
+	Stdout []byte // Stdout written by the command
+	Stderr []byte // Stderr written by the command
 }
 
 func (r *RemoteCommand) Run(ctx gornir.Context, wg *sync.WaitGroup, jobResult chan *gornir.JobResult) {
 	defer wg.Done()
 	result := gornir.NewJobResult(ctx)
+	host := ctx.Host()
 
 	sshConfig := &ssh.ClientConfig{
-		User: ctx.Host.Username,
+		User: host.Username,
 		Auth: []ssh.AuthMethod{
-			ssh.Password(ctx.Host.Password),
+			ssh.Password(host.Password),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	port := ctx.Host.Port
+	port := host.Port
 	if port == 0 {
 		port = 22
 	}
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ctx.Host.Hostname, port), sshConfig)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Hostname, port), sshConfig)
 	if err != nil {
 		result.SetErr(errors.Wrap(err, "failed to dial"))
 		jobResult <- result

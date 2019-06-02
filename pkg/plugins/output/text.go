@@ -1,8 +1,8 @@
 package output
 
 import (
-	"bytes"
 	"fmt"
+	"io"
 	"reflect"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -18,42 +18,60 @@ const (
 	resetColor = "\u001b[0m"
 )
 
-func red(m string) string {
-	return fmt.Sprintf("%v%v%v", redColor, m, resetColor)
+func red(m string, color bool) string {
+	if color {
+		return fmt.Sprintf("%v%v%v", redColor, m, resetColor)
+	}
+	return m
 }
 
-func green(m string) string {
-	return fmt.Sprintf("%v%v%v", greenColor, m, resetColor)
+func green(m string, color bool) string {
+	if color {
+		return fmt.Sprintf("%v%v%v", greenColor, m, resetColor)
+	}
+	return m
 }
 
-func yellow(m string) string {
-	return fmt.Sprintf("%v%v%v", yellowColor, m, resetColor)
+func yellow(m string, color bool) string {
+	if color {
+		return fmt.Sprintf("%v%v%v", yellowColor, m, resetColor)
+	}
+	return m
 }
-func blue(m string) string {
-	return fmt.Sprintf("%v%v%v", blueColor, m, resetColor)
+func blue(m string, color bool) string {
+	if color {
+		return fmt.Sprintf("%v%v%v", blueColor, m, resetColor)
+	}
+	return m
 }
 
 // func magenta(m string) string {
 //     return fmt.Sprintf("%v%v%v", magentaColor, m, resetColor)
 // }
-func cyan(m string) string {
-	return fmt.Sprintf("%v%v%v", cyanColor, m, resetColor)
+func cyan(m string, color bool) string {
+	if color {
+		return fmt.Sprintf("%v%v%v", cyanColor, m, resetColor)
+	}
+	return m
 }
 
-func renderInterface(buf *bytes.Buffer, i interface{}) {
+func renderInterface(wr io.Writer, i interface{}) error {
 	if i == nil {
-		return
+		return nil
 	}
 	v := reflect.Indirect(reflect.ValueOf(i))
 	for i := 0; i < v.NumField(); i++ {
 		fieldName := v.Type().Field(i).Name
-		buf.Write([]byte(fmt.Sprintf(" * %s: %s\n", fieldName, v.Field(i))))
+		if _, err := wr.Write([]byte(fmt.Sprintf(" * %s: %s\n", fieldName, v.Field(i)))); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func renderResult(buf *bytes.Buffer, result *gornir.JobResult, renderHost bool) {
+func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color bool) error {
 	if renderHost {
-		var colorFunc func(string) string
+		var colorFunc func(string, bool) string
 		switch {
 		case result.AnyErr() != nil:
 			colorFunc = red
@@ -62,26 +80,71 @@ func renderResult(buf *bytes.Buffer, result *gornir.JobResult, renderHost bool) 
 		default:
 			colorFunc = yellow
 		}
-		buf.Write([]byte(colorFunc(fmt.Sprintf("@ %s\n", result.Context().Host.Hostname))))
+		if _, err := wr.Write([]byte(colorFunc(fmt.Sprintf("@ %s\n", result.Context().Host().Hostname), color))); err != nil {
+			return err
+		}
 	}
-	renderInterface(buf, result.Data())
-	buf.Write([]byte(fmt.Sprintf("  - err: %v\n\n", result.Err())))
+	if err := renderInterface(wr, result.Data()); err != nil {
+		return err
+	}
+	if _, err := wr.Write([]byte(fmt.Sprintf("  - err: %v\n\n", result.Err()))); err != nil {
+		return err
+	}
 
 	for i, r := range result.SubResults() {
-		buf.Write([]byte(cyan(fmt.Sprintf("**** subtask %d\n", i))))
-		renderResult(buf, r, false)
+		if _, err := wr.Write([]byte(cyan(fmt.Sprintf("**** subtask %d\n", i), color))); err != nil {
+			return err
+		}
+		if err := renderResult(wr, r, false, color); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func RenderResults(results chan *gornir.JobResult) string {
-	var buf bytes.Buffer
+// RenderResults writes the contents of the results to an io.Writer in either color or b/w. The
+// output will be similar to:
+//     # What's my ip?
+//     @ dev5.no_group
+//       - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+//
+//     @ dev1.group_1
+//      * Stdout: 10.21.33.101/24
+//
+//      * Stderr:
+//       - err: <nil>
+//
+//     @ dev2.group_1
+//      * Stdout: 10.21.33.102/24
+//
+//      * Stderr:
+//       - err: <nil>
+//
+//     @ dev3.group_2
+//      * Stdout: 10.21.33.103/24
+//
+//      * Stderr:
+//       - err: <nil>
+//
+//     @ dev4.group_2
+//      * Stdout: 10.21.33.104/24
+//
+//      * Stderr:
+//       - err: <nil>
+func RenderResults(wr io.Writer, results chan *gornir.JobResult, color bool) error {
 	r := <-results
 
-	title := blue(fmt.Sprintf("# %s\n", r.Context().Title()))
-	buf.Write([]byte(title))
-	renderResult(&buf, r, true)
-	for r := range results {
-		renderResult(&buf, r, true)
+	title := blue(fmt.Sprintf("# %s\n", r.Context().Title()), color)
+	if _, err := wr.Write([]byte(title)); err != nil {
+		return err
 	}
-	return buf.String()
+	if err := renderResult(wr, r, true, color); err != nil {
+		return err
+	}
+	for r := range results {
+		if err := renderResult(wr, r, true, color); err != nil {
+			return err
+		}
+	}
+	return nil
 }

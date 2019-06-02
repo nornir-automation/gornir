@@ -1,19 +1,12 @@
 package gornir
 
-import (
-	"reflect"
-	"runtime"
-)
-
+// Logger defines the interface that a logger plugin can implement to
+// provide logging capabilities
 type Logger interface {
-	Info(...interface{})
-	Debug(...interface{})
-	Error(...interface{})
-	Warn(...interface{})
-	Fatal(...interface{})
-	WithField(string, interface{}) Logger
-}
-
-func GetFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+	Info(...interface{})                  // Info logs an informational message
+	Debug(...interface{})                 // Debug logs a debug message
+	Error(...interface{})                 // Error logs an error
+	Warn(...interface{})                  // Warn logs a warning
+	Fatal(...interface{})                 // Fatal logs a fatal event
+	WithField(string, interface{}) Logger // WithField adds data to the logger
 }
