@@ -1,8 +1,9 @@
+[![GoDoc](https://godoc.org/github.com/nornir-automation/gornir?status.svg)](http://godoc.org/github.com/nornir-automation/gornir)
+
 gornir
 ======
 
 Gornir is a pluggable framework with inventory management to help operate collections of devices. It's similar to [nornir](https://github.com/nornir-automation/nornir/) but in golang.
-
 
 The goal is to be able to operate on many devices with little effort. For instance:
 
