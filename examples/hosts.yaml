@@ -1,0 +1,30 @@
+---
+dev1.group_1:
+    port: 22
+    hostname: dev1.group_1
+    username: root
+    password: docker
+
+dev2.group_1:
+    port: 22
+    hostname: dev2.group_1
+    username: root
+    password: docker
+
+dev3.group_2:
+    port: 22
+    hostname: dev3.group_2
+    username: root
+    password: docker
+
+dev4.group_2:
+    port: 22
+    hostname: dev4.group_2
+    username: root
+    password: docker
+
+dev5.no_group:
+    port: 22
+    hostname: dev5.no_group
+    username: root
+    password: WRONG!!!
