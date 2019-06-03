@@ -7,7 +7,7 @@ Gornir is a pluggable framework with inventory management to help operate collec
 
 The goal is to be able to operate on many devices with little effort. For instance:
 
-```
+```go
 package main
 
 import (
@@ -48,7 +48,7 @@ func main() {
 
 would render:
 
-```
+```bash
 # What's my ip?
 @ dev5.no_group
   - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
@@ -78,15 +78,26 @@ would render:
   - err: <nil>
 ```
 
-You can see more examples in the [examples](examples) folder. You can run the examples yourself by executing:
+## Examples
 
-```
+You can see more examples in the [examples](examples) folder and run them with [Docker-Compose](https://docs.docker.com/compose/install/) as follows:
+
+1. Create a development enviroment
+
+```bash
 make start-dev-env
+```
 
+2. Run any of the examples in the [examples](examples) folder with `make example`. Specify the name of the example with `EXAMPLE`; for instance `2_simple_with_filter`.
+
+```bash
 make example EXAMPLE=2_simple_with_filter
 ```
 
-You can replace `2_simple_with_filter` with the name of any folder inside [examples](examples)
+3. After you are done, make sure you stop the development enviroment
 
+```bash
+make stop-dev-env
+```
 
 The project is still work in progress and feedback/help is welcomed.
