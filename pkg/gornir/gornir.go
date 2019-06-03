@@ -15,20 +15,25 @@ type Gornir struct {
 
 // Filter filters the hosts in the inventory returning a copy of the current
 // Gornir instance but with only the hosts that passed the filter
-func (g *Gornir) Filter(f FilterFunc) *Gornir {
+func (gr *Gornir) Filter(f FilterFunc) *Gornir {
 	return &Gornir{
-		Inventory: g.Inventory.Filter(g, f),
-		Logger:    g.Logger,
+		Inventory: gr.Inventory.Filter(gr, f),
+		Logger:    gr.Logger,
 	}
 }
 
 // RunS will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
-func (g *Gornir) RunS(title string, runner Runner, task Task) (chan *JobResult, error) {
-	results := make(chan *JobResult, len(g.Inventory.Hosts))
+func (gr *Gornir) RunS(title string, runner Runner, task Task) (chan *JobResult, error) {
+	results := make(chan *JobResult, len(gr.Inventory.Hosts))
 	err := runner.Run(
-		NewContext(context.Background(), title, g, g.Logger),
+		context.Background(),
 		task,
+		&TaskParameters{
+			Title:  title,
+			Gornir: gr,
+			Logger: gr.Logger,
+		},
 		results,
 	)
 	if err != nil {
@@ -44,10 +49,15 @@ func (g *Gornir) RunS(title string, runner Runner, task Task) (chan *JobResult, 
 // RunA will execute the task over the hosts in the inventory using the given runner.
 // This function doesn't block, the user can use the method Runnner.Wait instead.
 // It's also up to the user to ennsure the channel is closed
-func (g *Gornir) RunA(title string, runner Runner, task Task, results chan *JobResult) error {
+func (gr *Gornir) RunA(title string, runner Runner, task Task, results chan *JobResult) error {
 	err := runner.Run(
-		NewContext(context.Background(), title, g, g.Logger),
+		context.Background(), // TODO pass this?
 		task,
+		&TaskParameters{
+			Title:  title,
+			Gornir: gr,
+			Logger: gr.Logger,
+		},
 		results,
 	)
 	if err != nil {

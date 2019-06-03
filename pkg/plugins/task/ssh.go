@@ -2,6 +2,7 @@ package task
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"sync"
 
@@ -22,10 +23,10 @@ type RemoteCommandResults struct {
 	Stderr []byte // Stderr written by the command
 }
 
-func (r *RemoteCommand) Run(ctx gornir.Context, wg *sync.WaitGroup, jobResult chan *gornir.JobResult) {
+func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, taskParameters *gornir.TaskParameters, jobResult chan *gornir.JobResult) {
 	defer wg.Done()
-	result := gornir.NewJobResult(ctx)
-	host := ctx.Host()
+	host := taskParameters.Host
+	result := gornir.NewJobResult(ctx, taskParameters)
 
 	sshConfig := &ssh.ClientConfig{
 		User: host.Username,

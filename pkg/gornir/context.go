@@ -1,19 +1,16 @@
 package gornir
 
 import (
-	"context"
 	"runtime"
-	"time"
 
 	"github.com/google/uuid"
 )
 
-// Context implements the context.Context interface and enriches it
+// Params implements the context.Params interface and enriches it
 // with extra useful information. You will find this object mosty
 // in two places; in the JobResult and in objects implementing
 // the Task interface
-type Context struct {
-	ctx    context.Context
+type Params struct {
 	title  string
 	id     string
 	gr     *Gornir
@@ -21,24 +18,22 @@ type Context struct {
 	host   *Host
 }
 
-// NewContext returns a new Context
-func NewContext(ctx context.Context, title string, gr *Gornir, logger Logger) Context {
+// NewParams returns a new Params
+func NewParams(title string, gr *Gornir, logger Logger) Params {
 	id := uuid.New().String()
-	return Context{
+	return Params{
 		id:     id,
 		gr:     gr,
-		ctx:    ctx,
 		logger: logger.WithField("ID", id),
 		title:  title,
 	}
 }
 
-// ForHost returns a copy of the Context adding the Host to it
-func (c Context) ForHost(host *Host) Context {
-	return Context{
+// ForHost returns a copy of the Params adding the Host to it
+func (c Params) ForHost(host *Host) Params {
+	return Params{
 		id:     c.id,
 		gr:     c.gr,
-		ctx:    c.ctx,
 		logger: c.logger,
 		title:  c.title,
 		host:   host,
@@ -46,48 +41,28 @@ func (c Context) ForHost(host *Host) Context {
 }
 
 // Title returns the title of the task
-func (c Context) Title() string {
+func (c Params) Title() string {
 	return c.title
 }
 
 // Gornir returns the Gornir object that triggered the execution of the task
-func (c Context) Gornir() *Gornir {
+func (c Params) Gornir() *Gornir {
 	return c.gr
 }
 
 // Host returns the Host associated with the context
-func (c Context) Host() *Host {
+func (c Params) Host() *Host {
 	return c.host
-}
-
-// Deadline delegates the method to the underlying context pass upon creation
-func (c Context) Deadline() (time.Time, bool) {
-	return c.ctx.Deadline()
-}
-
-// Done delegates the method to the underlying context pass upon creation
-func (c Context) Done() <-chan struct{} {
-	return c.ctx.Done()
-}
-
-// Value delegates the method to the underlying context pass upon creation
-func (c Context) Value(key interface{}) interface{} {
-	return c.ctx.Value(key)
-}
-
-// Err will return the error returned by a task. Otherwise it will be nil
-func (c Context) Err() error {
-	return c.ctx.Err()
 }
 
 // ID returns the unique ID associated with the execution. All hosts
 // will share the same ID for a given Run
-func (c Context) ID() string {
+func (c Params) ID() string {
 	return c.id
 }
 
 // Logger returns a ready to use Logger
-func (c Context) Logger() Logger {
+func (c Params) Logger() Logger {
 	return c.logger.WithField("ID", c.id).WithField("funcName", getFrame(1).Function)
 }
 

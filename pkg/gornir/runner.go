@@ -1,41 +1,66 @@
 package gornir
 
 import (
+	"context"
 	"sync"
 )
+
+type TaskParameters struct {
+	Title  string
+	Gornir *Gornir
+	Logger Logger
+	Host   *Host
+}
+
+func (t *TaskParameters) ForHost(host *Host) *TaskParameters {
+	return &TaskParameters{
+		Title:  t.Title,
+		Gornir: t.Gornir,
+		Logger: t.Logger,
+		Host:   host,
+	}
+}
 
 // Task is the interface that task plugins need to implement.
 // the task is responsible to indicate its completion
 // by calling sync.WaitGroup.Done()
 type Task interface {
-	Run(Context, *sync.WaitGroup, chan *JobResult)
+	Run(context.Context, *sync.WaitGroup, *TaskParameters, chan *JobResult)
 }
 
 // Runner is the interface of a struct that can implement a strategy
 // to run tasks over hosts
 type Runner interface {
-	Run(Context, Task, chan *JobResult) error // Run executes the task over the hosts
-	Close() error                             // Close closes and cleans all objects associated with the runner
-	Wait() error                              // Wait blocks until all the hosts are done executing the task
+	Run(context.Context, Task, *TaskParameters, chan *JobResult) error // Run executes the task over the hosts
+	Close() error                                                      // Close closes and cleans all objects associated with the runner
+	Wait() error                                                       // Wait blocks until all the hosts are done executing the task
 }
 
 // JobResult is the result of running a task over a host.
 type JobResult struct {
-	ctx        Context
-	err        error
-	changed    bool
-	data       interface{}
-	subResults []*JobResult
+	ctx            context.Context
+	taskParameters *TaskParameters
+	err            error
+	changed        bool
+	data           interface{}
+	subResults     []*JobResult
 }
 
 // NewJobResult instantiates a new JobResult
-func NewJobResult(ctx Context) *JobResult {
-	return &JobResult{ctx: ctx}
+func NewJobResult(ctx context.Context, taskParameters *TaskParameters) *JobResult {
+	return &JobResult{
+		ctx:            ctx,
+		taskParameters: taskParameters,
+	}
 }
 
 // Context returns the context associated with the task
-func (r *JobResult) Context() Context {
+func (r *JobResult) Context() context.Context {
 	return r.ctx
+}
+
+func (r *JobResult) TaskParameters() *TaskParameters {
+	return r.taskParameters
 }
 
 // Err returns the error the task set, otherwise nil
@@ -60,7 +85,7 @@ func (r *JobResult) AnyErr() error {
 // SetErr stores the error  and also propagates it to the associated Host
 func (r *JobResult) SetErr(err error) {
 	r.err = err
-	r.Context().Host().setErr(err)
+	r.TaskParameters().Host.setErr(err)
 }
 
 // Changed will return whether the task changed something or not

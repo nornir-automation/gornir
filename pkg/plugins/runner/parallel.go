@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"sync"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -17,11 +18,11 @@ func Parallel() *ParallelRunner {
 	}
 }
 
-func (r ParallelRunner) Run(ctx gornir.Context, task gornir.Task, results chan *gornir.JobResult) error {
-	logger := ctx.Logger().WithField("runFunc", getFunctionName(task))
+func (r ParallelRunner) Run(ctx context.Context, task gornir.Task, taskParameters *gornir.TaskParameters, results chan *gornir.JobResult) error {
+	logger := taskParameters.Logger.WithField("runFunc", getFunctionName(task))
 	logger.Debug("starting runner")
 
-	gr := ctx.Gornir()
+	gr := taskParameters.Gornir
 	if len(gr.Inventory.Hosts) == 0 {
 		logger.Warn("no hosts to run against")
 		return nil
@@ -30,7 +31,7 @@ func (r ParallelRunner) Run(ctx gornir.Context, task gornir.Task, results chan *
 
 	for hostname, host := range gr.Inventory.Hosts {
 		logger.WithField("host", hostname).Debug("calling function")
-		go task.Run(ctx.ForHost(host), r.wg, results)
+		go task.Run(ctx, r.wg, taskParameters.ForHost(host), results)
 	}
 	return nil
 }
