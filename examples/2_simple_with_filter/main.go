@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
 	"github.com/nornir-automation/gornir/pkg/plugins/runner"
@@ -17,6 +18,7 @@ func main() {
 	logger := logger.NewLogrus(false)
 	// File where the inventory will be loaded from.
 	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
 	// define a function we will use to filter the hosts
 	filter := func(ctx context.Context, h *gornir.Host) bool {
 		return h.Hostname == "dev1.group_1" || h.Hostname == "dev4.group_2"
@@ -24,7 +26,7 @@ func main() {
 
 	// Instantiate Gornir
 	gr, err := gornir.Build(
-		gornir.WithInventory(file),
+		gornir.WithInventory(plugin),
 		gornir.WithLogger(logger),
 		gornir.WithFilter(filter),
 	)

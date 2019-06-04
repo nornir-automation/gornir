@@ -14,6 +14,7 @@ import (
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
 	"github.com/nornir-automation/gornir/pkg/plugins/runner"
@@ -23,10 +24,11 @@ import (
 func main() {
 	logger := logger.NewLogrus(false) 
 	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
 	
 	// Instantiate Gornir
 	gr, err := gornir.Build(
-		gornir.WithInventory(file),
+		gornir.WithInventory(plugin),
 		gornir.WithLogger(logger),
 	)	
 	if err != nil {

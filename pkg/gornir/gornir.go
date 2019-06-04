@@ -4,13 +4,11 @@ package gornir
 
 import (
 	"context"
-	"io/ioutil"
 	"reflect"
 	"runtime"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 )
 
 // Gornir is the main object that glues everything together
@@ -19,15 +17,21 @@ type Gornir struct {
 	Logger    Logger     // Logger for the object
 }
 
-// NewGornir is a Gornir constructor.
-func NewGornir() *Gornir {
+// InventoryPlugin is an Inventory Source
+type InventoryPlugin interface {
+	Create() (Inventory, error)
+}
+
+// New is a Gornir constructor. It is currently no different that new,
+// however is a placeholder for any future defaults.
+func New() *Gornir {
 	return new(Gornir)
 }
 
 // SetOption is a funcion that sets one or more options for a given Gornir.
 type SetOption func(r *Gornir) error
 
-// Build is a Gornir constructor with options.
+// Build construct a new Gornir from scratch with options.
 func Build(opts ...SetOption) (*Gornir, error) {
 	var gornir Gornir
 	for _, opt := range opts {
@@ -40,44 +44,15 @@ func Build(opts ...SetOption) (*Gornir, error) {
 }
 
 // WithInventory reads the inventory from a file for a Gornir.
-func WithInventory(f string) SetOption {
+func WithInventory(p InventoryPlugin) SetOption {
 	return func(g *Gornir) error {
-		inv, err := fromYAMLFile(f)
+		inv, err := p.Create()
 		if err != nil {
-			return errors.Wrap(err, "could not read inventory from file "+f)
+			return errors.Wrap(err, "could not read inventory from plugin")
 		}
-		g.Inventory = inv
+		g.Inventory = &inv
 		return nil
 	}
-}
-
-// fromYAMLFile will instantiate the inventory from a YAML file. The
-// contents of the YAML file follow the same structure as the structs
-// but in lower case. For instance:
-//     dev1.group_1:
-//         port: 22
-//         hostname: dev1.group_1
-//         username: root
-//         password: docker
-//
-//     dev2.group_1:
-//         port: 22
-//         hostname: dev2.group_1
-//         username: root
-//         password: docker
-func fromYAMLFile(hostsFile string) (*Inventory, error) {
-	b, err := ioutil.ReadFile(hostsFile)
-	if err != nil {
-		return &Inventory{}, errors.Wrap(err, "problem reading hosts file")
-	}
-	hosts := make(map[string]*Host)
-	err = yaml.Unmarshal(b, hosts)
-	if err != nil {
-		return &Inventory{}, errors.Wrap(err, "problem unmarshalling yaml")
-	}
-	return &Inventory{
-		Hosts: hosts,
-	}, nil
 }
 
 // WithLogger sets the logging option for a Gornir.
@@ -100,6 +75,17 @@ func WithFilter(f FilterFunc) SetOption {
 		g.Inventory = g.Inventory.Filter(context.TODO(), f)
 		return nil
 	}
+}
+
+// Build constructs a new Gornir from an existing one.
+func (gr *Gornir) Build(opts ...SetOption) (*Gornir, error) {
+	for _, opt := range opts {
+		err := opt(gr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return gr, nil
 }
 
 // Filter filters the hosts in the inventory returning a copy of the current
