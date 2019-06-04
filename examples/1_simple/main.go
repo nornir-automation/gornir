@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
-	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
 	"github.com/nornir-automation/gornir/pkg/plugins/runner"
@@ -13,18 +12,18 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false) // instantiate a logger plugin
-
-	// Load the inventory using the FromYAMLFile plugin
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	// Instantiate a logger plugin.
+	logger := logger.NewLogrus(false) 
+	// File where the inventory will be load from.
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	
+	// Instantiate Gornir
+	gr, err := gornir.Build(
+		gornir.WithInventory(file),
+		gornir.WithLogger(logger),
+	)	
 	if err != nil {
 		logger.Fatal(err)
-	}
-
-	// Instantiate Gornir
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
 	}
 
 	// Following call is going to execute the task over all the hosts using the runner.Parallel runner.
