@@ -3,7 +3,10 @@ package gornir
 
 import (
 	"context"
+	"reflect"
+	"runtime"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -25,15 +28,14 @@ func (gr *Gornir) Filter(ctx context.Context, f FilterFunc) *Gornir {
 // RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
 func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResult, error) {
+	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
+	defer close(results)
 	err := runner.Run(
 		context.Background(),
 		task,
-		&TaskParameters{
-			Title:  title,
-			Gornir: gr,
-			Logger: gr.Logger,
-		},
+		gr.Inventory.Hosts,
+		NewTaskParameters(title, logger),
 		results,
 	)
 	if err != nil {
@@ -42,7 +44,6 @@ func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResu
 	if err := runner.Wait(); err != nil {
 		return results, errors.Wrap(err, "problem waiting for runner")
 	}
-	close(results)
 	return results, nil
 }
 
@@ -50,18 +51,20 @@ func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResu
 // This function doesn't block, the user can use the method Runnner.Wait instead.
 // It's also up to the user to ennsure the channel is closed
 func (gr *Gornir) RunAsync(ctx context.Context, title string, runner Runner, task Task, results chan *JobResult) error {
+	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
 	err := runner.Run(
-		context.Background(), // TODO pass this?
+		ctx,
 		task,
-		&TaskParameters{
-			Title:  title,
-			Gornir: gr,
-			Logger: gr.Logger,
-		},
+		gr.Inventory.Hosts,
+		NewTaskParameters(title, logger),
 		results,
 	)
 	if err != nil {
 		return errors.Wrap(err, "problem calling runner")
 	}
 	return nil
+}
+
+func getFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }

@@ -19,9 +19,9 @@ import (
 type checkMemoryAndCPU struct {
 }
 
-func (c *checkMemoryAndCPU) Run(ctx context.Context, wg *sync.WaitGroup, taskParameters *gornir.TaskParameters, jobResult chan *gornir.JobResult) {
+func (c *checkMemoryAndCPU) Run(ctx context.Context, wg *sync.WaitGroup, tp *gornir.TaskParameters, jobResult chan *gornir.JobResult) {
 	// We instantiate a new object
-	result := gornir.NewJobResult(ctx, taskParameters)
+	result := gornir.NewJobResult(ctx, tp)
 
 	defer wg.Done() // flag as completed
 
@@ -33,11 +33,11 @@ func (c *checkMemoryAndCPU) Run(ctx context.Context, wg *sync.WaitGroup, taskPar
 	swg.Add(2)
 
 	// We call the first subtask and store the subresult
-	(&task.RemoteCommand{Command: "free -m"}).Run(ctx, swg, taskParameters, sr)
+	(&task.RemoteCommand{Command: "free -m"}).Run(ctx, swg, tp, sr)
 	result.AddSubResult(<-sr)
 
 	// We call the second subtask and store the subresult
-	(&task.RemoteCommand{Command: "uptime"}).Run(ctx, swg, taskParameters, sr)
+	(&task.RemoteCommand{Command: "uptime"}).Run(ctx, swg, tp, sr)
 	result.AddSubResult(<-sr)
 
 	jobResult <- result

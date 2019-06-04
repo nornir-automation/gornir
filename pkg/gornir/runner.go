@@ -6,18 +6,35 @@ import (
 )
 
 type TaskParameters struct {
-	Title  string
-	Gornir *Gornir
-	Logger Logger
-	Host   *Host
+	title  string
+	logger Logger
+	host   *Host
 }
 
-func (t *TaskParameters) ForHost(host *Host) *TaskParameters {
+func NewTaskParameters(title string, logger Logger) *TaskParameters {
 	return &TaskParameters{
-		Title:  t.Title,
-		Gornir: t.Gornir,
-		Logger: t.Logger,
-		Host:   host,
+		title:  title,
+		logger: logger,
+	}
+}
+
+func (tp *TaskParameters) Title() string {
+	return tp.title
+}
+
+func (tp *TaskParameters) Logger() Logger {
+	return tp.logger
+}
+
+func (tp *TaskParameters) Host() *Host {
+	return tp.host
+}
+
+func (tp *TaskParameters) ForHost(host *Host) *TaskParameters {
+	return &TaskParameters{
+		title:  tp.title,
+		logger: tp.logger.WithField("host", host.Hostname),
+		host:   host,
 	}
 }
 
@@ -31,26 +48,26 @@ type Task interface {
 // Runner is the interface of a struct that can implement a strategy
 // to run tasks over hosts
 type Runner interface {
-	Run(context.Context, Task, *TaskParameters, chan *JobResult) error // Run executes the task over the hosts
-	Close() error                                                      // Close closes and cleans all objects associated with the runner
-	Wait() error                                                       // Wait blocks until all the hosts are done executing the task
+	Run(context.Context, Task, map[string]*Host, *TaskParameters, chan *JobResult) error // Run executes the task over the hosts
+	Close() error                                                                        // Close closes and cleans all objects associated with the runner
+	Wait() error                                                                         // Wait blocks until all the hosts are done executing the task
 }
 
 // JobResult is the result of running a task over a host.
 type JobResult struct {
-	ctx            context.Context
-	taskParameters *TaskParameters
-	err            error
-	changed        bool
-	data           interface{}
-	subResults     []*JobResult
+	ctx        context.Context
+	tp         *TaskParameters
+	err        error
+	changed    bool
+	data       interface{}
+	subResults []*JobResult
 }
 
 // NewJobResult instantiates a new JobResult
-func NewJobResult(ctx context.Context, taskParameters *TaskParameters) *JobResult {
+func NewJobResult(ctx context.Context, tp *TaskParameters) *JobResult {
 	return &JobResult{
-		ctx:            ctx,
-		taskParameters: taskParameters,
+		ctx: ctx,
+		tp:  tp,
 	}
 }
 
@@ -60,7 +77,7 @@ func (r *JobResult) Context() context.Context {
 }
 
 func (r *JobResult) TaskParameters() *TaskParameters {
-	return r.taskParameters
+	return r.tp
 }
 
 // Err returns the error the task set, otherwise nil
@@ -85,7 +102,7 @@ func (r *JobResult) AnyErr() error {
 // SetErr stores the error  and also propagates it to the associated Host
 func (r *JobResult) SetErr(err error) {
 	r.err = err
-	r.TaskParameters().Host.setErr(err)
+	r.TaskParameters().Host().setErr(err)
 }
 
 // Changed will return whether the task changed something or not

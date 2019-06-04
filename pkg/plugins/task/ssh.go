@@ -23,10 +23,10 @@ type RemoteCommandResults struct {
 	Stderr []byte // Stderr written by the command
 }
 
-func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, taskParameters *gornir.TaskParameters, jobResult chan *gornir.JobResult) {
+func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, tp *gornir.TaskParameters, jobResult chan *gornir.JobResult) {
 	defer wg.Done()
-	host := taskParameters.Host
-	result := gornir.NewJobResult(ctx, taskParameters)
+	host := tp.Host()
+	result := gornir.NewJobResult(ctx, tp)
 
 	sshConfig := &ssh.ClientConfig{
 		User: host.Username,

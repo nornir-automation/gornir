@@ -17,30 +17,29 @@ func Sorted() *SortedRunner {
 	return &SortedRunner{}
 }
 
-func (r SortedRunner) Run(ctx context.Context, task gornir.Task, taskParameters *gornir.TaskParameters, results chan *gornir.JobResult) error {
-	logger := taskParameters.Logger.WithField("runFunc", getFunctionName(task))
+func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[string]*gornir.Host, tp *gornir.TaskParameters, results chan *gornir.JobResult) error {
+	logger := tp.Logger().WithField("runner", "Sorted")
 	logger.Debug("starting runner")
 
-	gr := taskParameters.Gornir
-	if len(gr.Inventory.Hosts) == 0 {
+	if len(hosts) == 0 {
 		logger.Warn("no hosts to run against")
 		return nil
 	}
 	wg := &sync.WaitGroup{}
-	wg.Add(len(gr.Inventory.Hosts))
+	wg.Add(len(hosts))
 
-	sortedHostnames := make([]string, len(gr.Inventory.Hosts))
+	sortedHostnames := make([]string, len(hosts))
 	i := 0
-	for hostname := range gr.Inventory.Hosts {
+	for hostname := range hosts {
 		sortedHostnames[i] = hostname
 		i++
 	}
 	sort.Slice(sortedHostnames, func(i, j int) bool { return sortedHostnames[i] < sortedHostnames[j] })
 
 	for _, hostname := range sortedHostnames {
-		host := gr.Inventory.Hosts[hostname]
+		host := hosts[hostname]
 		logger.WithField("host", hostname).Debug("calling function")
-		task.Run(ctx, wg, taskParameters.ForHost(host), results)
+		task.Run(ctx, wg, tp.ForHost(host), results)
 	}
 	return nil
 }
