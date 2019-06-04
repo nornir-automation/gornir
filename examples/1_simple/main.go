@@ -14,7 +14,7 @@ import (
 func main() {
 	// Instantiate a logger plugin.
 	logger := logger.NewLogrus(false) 
-	// File where the inventory will be load from.
+	// File where the inventory will be loaded from.
 	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
 	
 	// Instantiate Gornir
