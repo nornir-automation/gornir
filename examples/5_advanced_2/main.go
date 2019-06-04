@@ -15,15 +15,15 @@ import (
 
 func main() {
 	// Instantiate a logger plugin.
-	logger := logger.NewLogrus(false) 
+	logger := logger.NewLogrus(false)
 	// File where the inventory will be loaded from.
 	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
-	
+
 	// Instantiate Gornir
 	gr, err := gornir.Build(
 		gornir.WithInventory(file),
 		gornir.WithLogger(logger),
-	)	
+	)
 	if err != nil {
 		logger.Fatal(err)
 	}

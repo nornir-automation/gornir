@@ -1,4 +1,4 @@
-// Package gornir implements the core functionality and define the needed 
+// Package gornir implements the core functionality and define the needed
 // interfaces to integrate with the framework
 package gornir
 
@@ -44,7 +44,7 @@ func WithInventory(f string) SetOption {
 	return func(g *Gornir) error {
 		inv, err := fromYAMLFile(f)
 		if err != nil {
-			return errors.Wrap(err, "could not read inventory from file " + f)
+			return errors.Wrap(err, "could not read inventory from file "+f)
 		}
 		g.Inventory = inv
 		return nil
