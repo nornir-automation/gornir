@@ -35,7 +35,7 @@ func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResu
 		context.Background(),
 		task,
 		gr.Inventory.Hosts,
-		NewTaskParameters(title, logger),
+		NewJobParameters(title, logger),
 		results,
 	)
 	if err != nil {
@@ -56,7 +56,7 @@ func (gr *Gornir) RunAsync(ctx context.Context, title string, runner Runner, tas
 		ctx,
 		task,
 		gr.Inventory.Hosts,
-		NewTaskParameters(title, logger),
+		NewJobParameters(title, logger),
 		results,
 	)
 	if err != nil {

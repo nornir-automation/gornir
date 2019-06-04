@@ -18,8 +18,8 @@ func Parallel() *ParallelRunner {
 	}
 }
 
-func (r ParallelRunner) Run(ctx context.Context, task gornir.Task, hosts map[string]*gornir.Host, tp *gornir.TaskParameters, results chan *gornir.JobResult) error {
-	logger := tp.Logger().WithField("runner", "Parallel")
+func (r ParallelRunner) Run(ctx context.Context, task gornir.Task, hosts map[string]*gornir.Host, jp *gornir.JobParameters, results chan *gornir.JobResult) error {
+	logger := jp.Logger().WithField("runner", "Parallel")
 	logger.Debug("starting runner")
 
 	if len(hosts) == 0 {
@@ -30,7 +30,7 @@ func (r ParallelRunner) Run(ctx context.Context, task gornir.Task, hosts map[str
 
 	for hostname, host := range hosts {
 		logger.WithField("host", hostname).Debug("calling function")
-		go task.Run(ctx, r.wg, tp.ForHost(host), results)
+		go task.Run(ctx, r.wg, jp.ForHost(host), results)
 	}
 	return nil
 }

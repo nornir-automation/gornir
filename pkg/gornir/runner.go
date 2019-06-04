@@ -5,35 +5,35 @@ import (
 	"sync"
 )
 
-type TaskParameters struct {
+type JobParameters struct {
 	title  string
 	logger Logger
 	host   *Host
 }
 
-func NewTaskParameters(title string, logger Logger) *TaskParameters {
-	return &TaskParameters{
+func NewJobParameters(title string, logger Logger) *JobParameters {
+	return &JobParameters{
 		title:  title,
 		logger: logger,
 	}
 }
 
-func (tp *TaskParameters) Title() string {
-	return tp.title
+func (jp *JobParameters) Title() string {
+	return jp.title
 }
 
-func (tp *TaskParameters) Logger() Logger {
-	return tp.logger
+func (jp *JobParameters) Logger() Logger {
+	return jp.logger
 }
 
-func (tp *TaskParameters) Host() *Host {
-	return tp.host
+func (jp *JobParameters) Host() *Host {
+	return jp.host
 }
 
-func (tp *TaskParameters) ForHost(host *Host) *TaskParameters {
-	return &TaskParameters{
-		title:  tp.title,
-		logger: tp.logger.WithField("host", host.Hostname),
+func (jp *JobParameters) ForHost(host *Host) *JobParameters {
+	return &JobParameters{
+		title:  jp.title,
+		logger: jp.logger.WithField("host", host.Hostname),
 		host:   host,
 	}
 }
@@ -42,21 +42,21 @@ func (tp *TaskParameters) ForHost(host *Host) *TaskParameters {
 // the task is responsible to indicate its completion
 // by calling sync.WaitGroup.Done()
 type Task interface {
-	Run(context.Context, *sync.WaitGroup, *TaskParameters, chan *JobResult)
+	Run(context.Context, *sync.WaitGroup, *JobParameters, chan *JobResult)
 }
 
 // Runner is the interface of a struct that can implement a strategy
 // to run tasks over hosts
 type Runner interface {
-	Run(context.Context, Task, map[string]*Host, *TaskParameters, chan *JobResult) error // Run executes the task over the hosts
-	Close() error                                                                        // Close closes and cleans all objects associated with the runner
-	Wait() error                                                                         // Wait blocks until all the hosts are done executing the task
+	Run(context.Context, Task, map[string]*Host, *JobParameters, chan *JobResult) error // Run executes the task over the hosts
+	Close() error                                                                       // Close closes and cleans all objects associated with the runner
+	Wait() error                                                                        // Wait blocks until all the hosts are done executing the task
 }
 
 // JobResult is the result of running a task over a host.
 type JobResult struct {
 	ctx        context.Context
-	tp         *TaskParameters
+	jp         *JobParameters
 	err        error
 	changed    bool
 	data       interface{}
@@ -64,10 +64,10 @@ type JobResult struct {
 }
 
 // NewJobResult instantiates a new JobResult
-func NewJobResult(ctx context.Context, tp *TaskParameters) *JobResult {
+func NewJobResult(ctx context.Context, jp *JobParameters) *JobResult {
 	return &JobResult{
 		ctx: ctx,
-		tp:  tp,
+		jp:  jp,
 	}
 }
 
@@ -76,8 +76,8 @@ func (r *JobResult) Context() context.Context {
 	return r.ctx
 }
 
-func (r *JobResult) TaskParameters() *TaskParameters {
-	return r.tp
+func (r *JobResult) JobParameters() *JobParameters {
+	return r.jp
 }
 
 // Err returns the error the task set, otherwise nil
@@ -102,7 +102,7 @@ func (r *JobResult) AnyErr() error {
 // SetErr stores the error  and also propagates it to the associated Host
 func (r *JobResult) SetErr(err error) {
 	r.err = err
-	r.TaskParameters().Host().setErr(err)
+	r.JobParameters().Host().setErr(err)
 }
 
 // Changed will return whether the task changed something or not
