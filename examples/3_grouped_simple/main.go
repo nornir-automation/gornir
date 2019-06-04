@@ -57,7 +57,7 @@ func main() {
 		Logger:    logger,
 	}
 
-	results, err := gr.RunS(
+	results, err := gr.RunSync(
 		"Let's run a couple of commands",
 		runner.Parallel(),
 		&checkMemoryAndCPU{},

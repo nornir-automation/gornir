@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -31,8 +32,9 @@ func main() {
 	// by calling rnr.Wait()
 	rnr := runner.Parallel()
 
-	// Gornir.RunA doesn't block so it's up to the user to check the runner is done
-	err = gr.RunA(
+	// Gornir.RunAsync doesn't block so it's up to the user to check the runner is done
+	err = gr.RunAsync(
+		context.Background(),
 		"What's my hostname?",
 		rnr,
 		&task.RemoteCommand{Command: "hostname"},
