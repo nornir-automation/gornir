@@ -29,7 +29,7 @@
 //     		Logger:    logger,
 //     	}
 //
-//     	results, err := gr.RunS(
+//     	results, err := gr.RunSync(
 //     		"What's my ip?",
 //     		runner.Parallel(),
 //     		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},

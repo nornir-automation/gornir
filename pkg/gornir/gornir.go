@@ -3,7 +3,10 @@ package gornir
 
 import (
 	"context"
+	"reflect"
+	"runtime"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -15,20 +18,24 @@ type Gornir struct {
 
 // Filter filters the hosts in the inventory returning a copy of the current
 // Gornir instance but with only the hosts that passed the filter
-func (g *Gornir) Filter(f FilterFunc) *Gornir {
+func (gr *Gornir) Filter(ctx context.Context, f FilterFunc) *Gornir {
 	return &Gornir{
-		Inventory: g.Inventory.Filter(g, f),
-		Logger:    g.Logger,
+		Inventory: gr.Inventory.Filter(ctx, f),
+		Logger:    gr.Logger,
 	}
 }
 
-// RunS will execute the task over the hosts in the inventory using the given runner.
+// RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
-func (g *Gornir) RunS(title string, runner Runner, task Task) (chan *JobResult, error) {
-	results := make(chan *JobResult, len(g.Inventory.Hosts))
+func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResult, error) {
+	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
+	results := make(chan *JobResult, len(gr.Inventory.Hosts))
+	defer close(results)
 	err := runner.Run(
-		NewContext(context.Background(), title, g, g.Logger),
+		context.Background(),
 		task,
+		gr.Inventory.Hosts,
+		NewJobParameters(title, logger),
 		results,
 	)
 	if err != nil {
@@ -37,21 +44,27 @@ func (g *Gornir) RunS(title string, runner Runner, task Task) (chan *JobResult, 
 	if err := runner.Wait(); err != nil {
 		return results, errors.Wrap(err, "problem waiting for runner")
 	}
-	close(results)
 	return results, nil
 }
 
-// RunA will execute the task over the hosts in the inventory using the given runner.
+// RunAsync will execute the task over the hosts in the inventory using the given runner.
 // This function doesn't block, the user can use the method Runnner.Wait instead.
 // It's also up to the user to ennsure the channel is closed
-func (g *Gornir) RunA(title string, runner Runner, task Task, results chan *JobResult) error {
+func (gr *Gornir) RunAsync(ctx context.Context, title string, runner Runner, task Task, results chan *JobResult) error {
+	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
 	err := runner.Run(
-		NewContext(context.Background(), title, g, g.Logger),
+		ctx,
 		task,
+		gr.Inventory.Hosts,
+		NewJobParameters(title, logger),
 		results,
 	)
 	if err != nil {
 		return errors.Wrap(err, "problem calling runner")
 	}
 	return nil
+}
+
+func getFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }

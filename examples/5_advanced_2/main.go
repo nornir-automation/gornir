@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -31,7 +32,8 @@ func main() {
 	rnr := runner.Parallel()
 
 	// The following call will not block
-	err = gr.RunA(
+	err = gr.RunAsync(
+		context.Background(),
 		"What's my hostname?",
 		rnr,
 		&task.RemoteCommand{Command: "hostname"},

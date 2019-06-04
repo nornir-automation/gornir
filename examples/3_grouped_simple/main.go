@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"sync"
 
@@ -18,9 +19,9 @@ import (
 type checkMemoryAndCPU struct {
 }
 
-func (c checkMemoryAndCPU) Run(ctx gornir.Context, wg *sync.WaitGroup, jobResult chan *gornir.JobResult) {
+func (c *checkMemoryAndCPU) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jobResult chan *gornir.JobResult) {
 	// We instantiate a new object
-	result := gornir.NewJobResult(ctx)
+	result := gornir.NewJobResult(ctx, jp)
 
 	defer wg.Done() // flag as completed
 
@@ -32,11 +33,11 @@ func (c checkMemoryAndCPU) Run(ctx gornir.Context, wg *sync.WaitGroup, jobResult
 	swg.Add(2)
 
 	// We call the first subtask and store the subresult
-	(&task.RemoteCommand{Command: "free -m"}).Run(ctx, swg, sr)
+	(&task.RemoteCommand{Command: "free -m"}).Run(ctx, swg, jp, sr)
 	result.AddSubResult(<-sr)
 
 	// We call the second subtask and store the subresult
-	(&task.RemoteCommand{Command: "uptime"}).Run(ctx, swg, sr)
+	(&task.RemoteCommand{Command: "uptime"}).Run(ctx, swg, jp, sr)
 	result.AddSubResult(<-sr)
 
 	jobResult <- result
@@ -56,7 +57,7 @@ func main() {
 		Logger:    logger,
 	}
 
-	results, err := gr.RunS(
+	results, err := gr.RunSync(
 		"Let's run a couple of commands",
 		runner.Parallel(),
 		&checkMemoryAndCPU{},
