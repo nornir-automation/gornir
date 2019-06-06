@@ -1,4 +1,5 @@
-// Package Gornir implements the core functionality and define the needed interfaces to integrate with the framework
+// Package gornir implements the core functionality and define the needed interfaces
+// to integrate with the framework
 package gornir
 
 import (
@@ -14,6 +15,72 @@ import (
 type Gornir struct {
 	Inventory *Inventory // Inventory for the object
 	Logger    Logger     // Logger for the object
+}
+
+// InventoryPlugin is an Inventory Source
+type InventoryPlugin interface {
+	Create() (Inventory, error)
+}
+
+// Builder defines the steps to construct a Gornir
+type Builder interface {
+	SetInventory(p InventoryPlugin) Builder
+	SetLogger(l Logger) Builder
+	SetFilter(f FilterFunc) Builder
+	Build() (*Gornir, error)
+}
+
+// FromYAMLBuilder is concrete builder
+type FromYAMLBuilder struct {
+	plugin InventoryPlugin
+	logg   Logger
+	filter FilterFunc
+}
+
+// SetInventory sets the inventory source for the Gornir being built.
+func (b *FromYAMLBuilder) SetInventory(p InventoryPlugin) Builder {
+	b.plugin = p
+	return b
+}
+
+// SetLogger sets the logger for the Gornir being built.
+func (b *FromYAMLBuilder) SetLogger(l Logger) Builder {
+	b.logg = l
+	return b
+}
+
+// SetFilter applies a host filter to the Gornir being built.
+func (b *FromYAMLBuilder) SetFilter(f FilterFunc) Builder {
+	b.filter = f
+	return b
+}
+
+// Build returns a new Gornir with the specified parameters.
+func (b *FromYAMLBuilder) Build() (*Gornir, error) {
+	gr := new(Gornir)
+
+	if b.plugin != nil {
+
+		inv, err := b.plugin.Create()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not read inventory from plugin")
+		}
+		gr.Inventory = &inv
+	}
+
+	if b.logg != nil {
+		gr.Logger = b.logg
+	}
+
+	if b.filter != nil {
+		gr.Inventory = gr.Inventory.Filter(context.TODO(), b.filter)
+	}
+	return gr, nil
+}
+
+// NewFromYAML returns a YAML builder
+func NewFromYAML() Builder {
+	return new(FromYAMLBuilder)
 }
 
 // Filter filters the hosts in the inventory returning a copy of the current
