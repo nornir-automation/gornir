@@ -2,10 +2,11 @@ package gornir_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	inv "github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	log "github.com/nornir-automation/gornir/pkg/plugins/logger"
-	"testing"
 )
 
 var (
@@ -66,6 +67,8 @@ func TestBuild(t *testing.T) {
 				gornir.WithInventory(plugin),
 				gornir.WithLogger(logger),
 			)
+			olen := len(original.Inventory.Hosts)
+
 			if err != nil {
 				t.Fatalf("could not build a Gornir from file '%s' in Test Case '%s'. Error: '%v'",
 					tc.input, tc.name, err)
@@ -76,8 +79,12 @@ func TestBuild(t *testing.T) {
 					tc.name, err)
 			}
 			if len(filtered.Inventory.Hosts) != tc.length {
-				t.Fatalf("Inventory Length in Test Case '%s' is %v, want %v",
+				t.Fatalf("Filtered Inventory Length in Test Case '%s' is %v, want %v",
 					tc.name, len(filtered.Inventory.Hosts), tc.length)
+			}
+			if len(original.Inventory.Hosts) != olen {
+				t.Fatalf("Oringinal Inventory Length in Test Case '%s' is %v, want %v",
+					tc.name, len(original.Inventory.Hosts), olen)
 			}
 		})
 	}

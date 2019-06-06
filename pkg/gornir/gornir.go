@@ -78,14 +78,14 @@ func WithFilter(f FilterFunc) SetOption {
 }
 
 // Build constructs a new Gornir from an existing one.
-func (gr *Gornir) Build(opts ...SetOption) (*Gornir, error) {
+func (gr Gornir) Build(opts ...SetOption) (*Gornir, error) {
 	for _, opt := range opts {
-		err := opt(gr)
+		err := opt(&gr)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return gr, nil
+	return &gr, nil
 }
 
 // Filter filters the hosts in the inventory returning a copy of the current
