@@ -44,18 +44,14 @@ func (c *checkMemoryAndCPU) Run(ctx context.Context, wg *sync.WaitGroup, jp *gor
 }
 
 func main() {
-	// main is business as usual
+	// Instantiate a logger plugin.
 	logger := logger.NewLogrus(false)
+	// File where the inventory will be loaded from.
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	builder := gornir.NewFromYAML()
+	gr, err := builder.SetInventory(plugin).SetLogger(logger).Build()
 
 	results, err := gr.RunSync(
 		"Let's run a couple of commands",

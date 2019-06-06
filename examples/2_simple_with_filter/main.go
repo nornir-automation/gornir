@@ -14,26 +14,24 @@ import (
 )
 
 func main() {
+	// Instantiate a logger plugin.
 	logger := logger.NewLogrus(false)
-
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	// File where the inventory will be loaded from.
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
 
 	// define a function we will use to filter the hosts
 	filter := func(ctx context.Context, h *gornir.Host) bool {
 		return h.Hostname == "dev1.group_1" || h.Hostname == "dev4.group_2"
 	}
 
+	builder := gornir.NewFromYAML()
+
+	gr, err := builder.SetInventory(plugin).SetLogger(logger).SetFilter(filter).Build()
+
 	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
 	// above. This will narrow down the inventor to the hosts matching the filter
-	results, err := gr.Filter(context.Background(), filter).RunSync(
+	results, err := gr.RunSync(
 		"What's my ip?",
 		runner.Parallel(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},

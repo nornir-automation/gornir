@@ -13,19 +13,14 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false) // instantiate a logger plugin
+	// Instantiate a logger plugin.
+	logger := logger.NewLogrus(false)
+	// File where the inventory will be loaded from.
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
 
-	// Load the inventory using the FromYAMLFile plugin
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	// Instantiate Gornir
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	builder := gornir.NewFromYAML()
+	gr, err := builder.SetInventory(plugin).SetLogger(logger).Build()
 
 	// Following call is going to execute the task over all the hosts using the runner.Parallel runner.
 	// Said runner is going to handle the parallelization for us. Gornir.RunS is also going to block

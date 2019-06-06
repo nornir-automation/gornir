@@ -24,15 +24,11 @@ import (
 func main() {
 	logger := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
-	if err != nil {
-		logger.Fatal(err)
-	}
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
 
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	builder := gornir.NewFromYAML()
+	gr, err := builder.SetInventory(plugin).SetLogger(logger).Build()
 
 	results, err := gr.RunSync(
 		"What's my ip?",
