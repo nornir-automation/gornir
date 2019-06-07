@@ -1,4 +1,5 @@
-// Package Gornir implements the core functionality and define the needed interfaces to integrate with the framework
+// Package gornir implements the core functionality and define the needed
+// interfaces to integrate with the framework
 package gornir
 
 import (
@@ -14,6 +15,41 @@ import (
 type Gornir struct {
 	Inventory *Inventory // Inventory for the object
 	Logger    Logger     // Logger for the object
+}
+
+// New is a Gornir constructor. It is currently no different that new,
+// however is a placeholder for any future defaults.
+func New() *Gornir {
+	return new(Gornir)
+}
+
+// InventoryPlugin is an Inventory Source
+type InventoryPlugin interface {
+	Create() (Inventory, error)
+}
+
+// WithInventory creates a new Gornir with an Inventory.
+func (gr *Gornir) WithInventory(inv Inventory) *Gornir {
+	return &Gornir{
+		Logger:    gr.Logger,
+		Inventory: &inv,
+	}
+}
+
+// WithFilter creates a new Gornir with a filtered Inventory.
+func (gr *Gornir) WithFilter(f FilterFunc) *Gornir {
+	return &Gornir{
+		Logger:    gr.Logger,
+		Inventory: gr.Inventory.Filter(context.TODO(), f),
+	}
+}
+
+// WithLogger creates a new Gornir with a Logger.
+func (gr *Gornir) WithLogger(l Logger) *Gornir {
+	return &Gornir{
+		Logger:    l,
+		Inventory: gr.Inventory,
+	}
 }
 
 // Filter filters the hosts in the inventory returning a copy of the current
