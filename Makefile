@@ -1,5 +1,16 @@
 PROJECT="github.com/nornir-automation/gornir"
 
+GOLANG=latest
+
+.PHONY: tests
+tests:
+	docker run \
+		--rm \
+		-v $(PWD):/go/src/$(PROJECT) \
+		-w /go/src/$(PROJECT) \
+		golang:$(GOLANG) \
+			go test -v github.com/nornir-automation/gornir/... -coverprofile=coverage.txt -covermode=atomic
+
 .PHONY: lint
 lint:
 	docker run \

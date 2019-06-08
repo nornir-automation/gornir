@@ -1,4 +1,7 @@
 [![GoDoc](https://godoc.org/github.com/nornir-automation/gornir?status.svg)](http://godoc.org/github.com/nornir-automation/gornir)
+[![Build Status](https://travis-ci.org/nornir-automation/gornir.svg?branch=master)](https://travis-ci.org/nornir-automation/gornir)
+[![codecov](https://codecov.io/gh/nornir-automation/gornir/branch/master/graph/badge.svg)](https://codecov.io/gh/nornir-automation/gornir)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nornir-automation/gornir)](https://goreportcard.com/report/github.com/nornir-automation/gornir)
 
 gornir
 ======

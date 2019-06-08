@@ -1,0 +1,14 @@
+sudo: required
+language: minimal
+dist: xenial
+services:
+- docker
+matrix:
+  include:
+  - env: GOLANG=1.11
+  - env: GOLANG=1.12
+  - env: LINT=1
+script:
+- if [ -z $LINT ]; then make tests; else make lint; fi
+after_success:
+- bash <(curl -s https://codecov.io/bash)
