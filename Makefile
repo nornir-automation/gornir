@@ -1,6 +1,6 @@
 PROJECT="github.com/nornir-automation/gornir"
 
-GOLANG=latest
+GOLANG?=latest
 
 .PHONY: tests
 tests:
