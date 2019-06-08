@@ -3,6 +3,7 @@ module github.com/nornir-automation/gornir
 go 1.12
 
 require (
+	github.com/google/go-cmp v0.3.0
 	github.com/google/uuid v1.1.1
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/pkg/errors v0.8.1
