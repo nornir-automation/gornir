@@ -30,7 +30,7 @@ func main() {
 
 	// We need to store the runner as we will need to check its completion later on
 	// by calling rnr.Wait()
-	rnr := runner.Parallel()
+	rnr := runner.Sorted()
 
 	// Gornir.RunAsync doesn't block so it's up to the user to check the runner is done
 	err = gr.RunAsync(
