@@ -35,7 +35,7 @@ func main() {
 	// above. This will narrow down the inventor to the hosts matching the filter
 	results, err := gr.Filter(context.Background(), filter).RunSync(
 		"What's my ip?",
-		runner.Parallel(),
+		runner.Sorted(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {

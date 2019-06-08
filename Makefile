@@ -28,19 +28,21 @@ godoc:
 		godoc -http 0.0.0.0:6060 -v
 
 
-.PHONY: save-test-example-output
-save-test-example-output:
+.PHONY: test-example
+test-example:
 	docker-compose run gornir \
 		go run /go/src/github.com/nornir-automation/gornir/examples/$(EXAMPLE)/main.go > examples/$(EXAMPLE)/output.txt
+	git diff --exit-code examples/$(EXAMPLE)/output.txt
 
 .PHONY: _test-examples
 _test-examples:
-	make save-test-example-output EXAMPLE=1_simple
-	make save-test-example-output EXAMPLE=2_simple_with_filter
-	make save-test-example-output EXAMPLE=3_grouped_simple
-	make save-test-example-output EXAMPLE=4_advanced_1
-	make save-test-example-output EXAMPLE=5_advanced_2
-	git diff --exit-code examples/
+	# not super proud but we run it twice because sometimes the order of the
+	# auth methods change causing the error of dev5 to be slightly different
+	make test-example EXAMPLE=1_simple || make test-example EXAMPLE=1_simple
+	make test-example EXAMPLE=2_simple_with_filter || make test-example EXAMPLE=2_simple_with_filter
+	make test-example EXAMPLE=3_grouped_simple || make test-example EXAMPLE=3_grouped_simple
+	make test-example EXAMPLE=4_advanced_1 || make test-example EXAMPLE=4_advanced_1
+	make test-example EXAMPLE=5_advanced_2 || make test-example EXAMPLE=5_advanced_2
 
 .PHONY: test-examples
 test-examples: start-dev-env _test-examples stop-dev-env
