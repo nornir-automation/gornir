@@ -1,7 +1,6 @@
 package gornir_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -43,10 +42,10 @@ func TestRead(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	f1 := func(ctx context.Context, h *gornir.Host) bool {
+	f1 := func(h *gornir.Host) bool {
 		return h.Hostname == "dev1.group_1" || h.Hostname == "dev4.group_2"
 	}
-	f2 := func(ctx context.Context, h *gornir.Host) bool {
+	f2 := func(h *gornir.Host) bool {
 		return h.Hostname == "uknownk"
 	}
 	tt := []struct {
@@ -71,7 +70,7 @@ func TestBuild(t *testing.T) {
 				t.Fatalf("could not build a Gornir from file '%s' in Test Case '%s'. Error: '%v'",
 					tc.input, tc.name, err)
 			}
-			filtered := original.WithFilter(tc.filter)
+			filtered := original.Filter(tc.filter)
 			if err != nil {
 				t.Fatalf("could not build a Filtered Gornir in Test Case '%s'. Error: '%v'",
 					tc.name, err)

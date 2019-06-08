@@ -2,7 +2,6 @@
 package main
 
 import (
-	"context"
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -26,15 +25,15 @@ func main() {
 	}
 
 	// define a function we will use to filter the hosts
-	filter := func(ctx context.Context, h *gornir.Host) bool {
+	filter := func(h *gornir.Host) bool {
 		return h.Hostname == "dev1.group_1" || h.Hostname == "dev4.group_2"
 	}
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log).WithFilter(filter)
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
 
 	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
 	// above. This will narrow down the inventor to the hosts matching the filter
-	results, err := gr.Filter(context.Background(), filter).RunSync(
+	results, err := gr.Filter(filter).RunSync(
 		"What's my ip?",
 		runner.Parallel(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},

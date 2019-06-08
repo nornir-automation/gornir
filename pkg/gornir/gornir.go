@@ -23,41 +23,29 @@ func New() *Gornir {
 	return new(Gornir)
 }
 
-// InventoryPlugin is an Inventory Source
-type InventoryPlugin interface {
-	Create() (Inventory, error)
-}
-
 // WithInventory creates a new Gornir with an Inventory.
 func (gr *Gornir) WithInventory(inv Inventory) *Gornir {
 	return &Gornir{
-		Logger:    gr.Logger,
 		Inventory: &inv,
+		Logger:    gr.Logger,
 	}
 }
 
-// WithFilter creates a new Gornir with a filtered Inventory.
-func (gr *Gornir) WithFilter(f FilterFunc) *Gornir {
+// Filter creates a new Gornir with a filtered Inventory.
+// It filters the hosts in the inventory returning a copy of the current
+// Gornir instance but with only the hosts that passed the filter.
+func (gr *Gornir) Filter(f FilterFunc) *Gornir {
 	return &Gornir{
+		Inventory: gr.Inventory.Filter(f),
 		Logger:    gr.Logger,
-		Inventory: gr.Inventory.Filter(context.TODO(), f),
 	}
 }
 
 // WithLogger creates a new Gornir with a Logger.
 func (gr *Gornir) WithLogger(l Logger) *Gornir {
 	return &Gornir{
-		Logger:    l,
 		Inventory: gr.Inventory,
-	}
-}
-
-// Filter filters the hosts in the inventory returning a copy of the current
-// Gornir instance but with only the hosts that passed the filter
-func (gr *Gornir) Filter(ctx context.Context, f FilterFunc) *Gornir {
-	return &Gornir{
-		Inventory: gr.Inventory.Filter(ctx, f),
-		Logger:    gr.Logger,
+		Logger:    l,
 	}
 }
 
