@@ -32,7 +32,7 @@ func main() {
 	// until the runner has completed executing the task over all the hosts
 	results, err := gr.RunSync(
 		"What's my ip?",
-		runner.Parallel(),
+		runner.Sorted(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
