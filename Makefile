@@ -19,6 +19,12 @@ lint:
 		-w /go/src/$(PROJECT) \
 		golangci/golangci-lint \
 			golangci-lint run
+	docker run \
+		--rm \
+		-v $(PWD):/go/src/$(PROJECT) \
+		-w /go/src/$(PROJECT) \
+		golangci/golangci-lint \
+			golangci-lint run --no-config --exclude-use-default=false --disable-all --enable=golint
 
 .PHONY: start-dev-env
 start-dev-env:
