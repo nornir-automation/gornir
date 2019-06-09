@@ -24,14 +24,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log)
+	rnr := runner.Sorted()
+
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
 	// Following call is going to execute the task over all the hosts using the runner.Parallel runner.
 	// Said runner is going to handle the parallelization for us. Gornir.RunS is also going to block
 	// until the runner has completed executing the task over all the hosts
 	results, err := gr.RunSync(
 		"What's my ip?",
-		runner.Sorted(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
