@@ -5,10 +5,10 @@
 // The goal is to be able to operate on many devices with little effort. For instance:
 //
 // 	package main
-//	
+//
 // 	import (
 // 		"os"
-//	
+//
 // 		"github.com/nornir-automation/gornir/pkg/gornir"
 // 		"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 // 		"github.com/nornir-automation/gornir/pkg/plugins/logger"
@@ -16,19 +16,19 @@
 // 		"github.com/nornir-automation/gornir/pkg/plugins/runner"
 // 		"github.com/nornir-automation/gornir/pkg/plugins/task"
 // 	)
-//	
+//
 // 	func main() {
 // 		log := logger.NewLogrus(false)
-//	
+//
 // 		file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
 // 		plugin := inventory.FromYAML{HostsFile: file}
 // 		inv, err := plugin.Create()
 // 		if err != nil {
 // 			log.Fatal(err)
 // 		}
-//	
+//
 // 		gr := gornir.New().WithInventory(inv).WithLogger(log)
-//	
+//
 // 		results, err := gr.RunSync(
 // 			"What's my ip?",
 // 			runner.Parallel(),

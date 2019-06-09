@@ -14,7 +14,7 @@ type FromYAML struct {
 	HostsFile string
 }
 
-// Create parses the content of a YAML file follwoing the same structure
+// Create parses the content of a YAML file following the same structure
 // as the structs, but in lower case to create an Inventory. For instance:
 //     dev1.group_1:
 //         port: 22
