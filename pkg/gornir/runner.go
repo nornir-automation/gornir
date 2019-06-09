@@ -55,11 +55,10 @@ type Runner interface {
 
 // JobResult is the result of running a task over a host.
 type JobResult struct {
-	ctx        context.Context
-	jp         *JobParameters
-	err        error
-	data       interface{}
-	subResults []*JobResult
+	ctx  context.Context
+	jp   *JobParameters
+	err  error
+	data interface{}
 }
 
 // NewJobResult instantiates a new JobResult
@@ -86,20 +85,6 @@ func (r *JobResult) Err() error {
 	return r.err
 }
 
-// AnyErr will return either the error the task set or any error reported by
-// any subtask
-func (r *JobResult) AnyErr() error {
-	if r.err != nil {
-		return r.err
-	}
-	for _, s := range r.subResults {
-		if s.err != nil {
-			return s.err
-		}
-	}
-	return nil
-}
-
 // SetErr stores the error  and also propagates it to the associated Host
 func (r *JobResult) SetErr(err error) {
 	r.err = err
@@ -116,20 +101,9 @@ func (r *JobResult) SetData(data interface{}) {
 	r.data = data
 }
 
-// SubResults returns the result of subtasks
-func (r *JobResult) SubResults() []*JobResult {
-	return r.subResults
-}
-
-// AddSubResult allows you to store the result of running a subtask
-func (r *JobResult) AddSubResult(result *JobResult) {
-	r.subResults = append(r.subResults, result)
-}
-
 func TaskWrapper(ctx context.Context, wg *sync.WaitGroup, taskFunc Task, jp *JobParameters, results chan *JobResult) {
 	defer wg.Done()
 	res, err := taskFunc.Run(ctx, jp.host)
 	jp.Host().setErr(err)
 	results <- NewJobResult(ctx, jp, res, err)
 }
-
