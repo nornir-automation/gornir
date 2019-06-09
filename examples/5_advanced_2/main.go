@@ -15,17 +15,18 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false)
+	// Instantiate a logger plugin
+	log := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	// Load the inventory using the FromYAMLFile plugin
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
+	inv, err := plugin.Create()
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
 
 	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
@@ -40,7 +41,7 @@ func main() {
 		results,
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	// This goroutine is going to wait for the runner

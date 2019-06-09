@@ -44,18 +44,18 @@ func (c *getHostnameAndIP) Run(ctx context.Context, wg *sync.WaitGroup, jp *gorn
 }
 
 func main() {
-	// main is business as usual
-	logger := logger.NewLogrus(false)
+	// Instantiate a logger plugin
+	log := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	// Load the inventory using the FromYAMLFile plugin
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
+	inv, err := plugin.Create()
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
 
 	results, err := gr.RunSync(
 		"Let's run a couple of commands",
@@ -63,7 +63,7 @@ func main() {
 		&getHostnameAndIP{},
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	output.RenderResults(os.Stdout, results, true)
 }

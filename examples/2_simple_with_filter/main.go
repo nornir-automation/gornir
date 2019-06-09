@@ -2,7 +2,6 @@
 package main
 
 import (
-	"context"
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -14,32 +13,33 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false)
+	// Instantiate a logger plugin
+	log := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	// Load the inventory using the FromYAMLFile plugin
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
+	inv, err := plugin.Create()
 	if err != nil {
-		logger.Fatal(err)
-	}
-
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
+		log.Fatal(err)
 	}
 
 	// define a function we will use to filter the hosts
-	filter := func(ctx context.Context, h *gornir.Host) bool {
+	filter := func(h *gornir.Host) bool {
 		return h.Hostname == "dev1.group_1" || h.Hostname == "dev4.group_2"
 	}
 
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
+
 	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
 	// above. This will narrow down the inventor to the hosts matching the filter
-	results, err := gr.Filter(context.Background(), filter).RunSync(
+	results, err := gr.Filter(filter).RunSync(
 		"What's my ip?",
 		runner.Sorted(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	output.RenderResults(os.Stdout, results, true)
