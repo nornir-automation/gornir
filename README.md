@@ -1,4 +1,7 @@
 [![GoDoc](https://godoc.org/github.com/nornir-automation/gornir?status.svg)](http://godoc.org/github.com/nornir-automation/gornir)
+[![Build Status](https://travis-ci.com/nornir-automation/gornir.svg?branch=master)](https://travis-ci.com/nornir-automation/gornir)
+[![codecov](https://codecov.io/gh/nornir-automation/gornir/branch/master/graph/badge.svg)](https://codecov.io/gh/nornir-automation/gornir)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nornir-automation/gornir)](https://goreportcard.com/report/github.com/nornir-automation/gornir)
 
 gornir
 ======
@@ -22,17 +25,16 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false)
+	log := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
+	inv, err := plugin.Create()
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
 
 	results, err := gr.RunSync(
 		"What's my ip?",
@@ -40,7 +42,7 @@ func main() {
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	output.RenderResults(os.Stdout, results, true)
 }
