@@ -13,30 +13,29 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false) // instantiate a logger plugin
+	// Instantiate a logger plugin
+	log := logger.NewLogrus(false)
 
 	// Load the inventory using the FromYAMLFile plugin
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
+	inv, err := plugin.Create()
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	// Instantiate Gornir
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
 
 	// Following call is going to execute the task over all the hosts using the runner.Parallel runner.
 	// Said runner is going to handle the parallelization for us. Gornir.RunS is also going to block
 	// until the runner has completed executing the task over all the hosts
 	results, err := gr.RunSync(
 		"What's my ip?",
-		runner.Parallel(),
+		runner.Sorted(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	// next call is going to print the result on screen

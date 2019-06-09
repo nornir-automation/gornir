@@ -14,23 +14,24 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false)
+	// Instantiate a logger plugin
+	log := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	// Load the inventory using the FromYAMLFile plugin
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
+	inv, err := plugin.Create()
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
 
 	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
 	// We need to store the runner as we will need to check its completion later on
 	// by calling rnr.Wait()
-	rnr := runner.Parallel()
+	rnr := runner.Sorted()
 
 	// Gornir.RunAsync doesn't block so it's up to the user to check the runner is done
 	err = gr.RunAsync(
@@ -41,7 +42,7 @@ func main() {
 		results,
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	// Next call will block until the runner is done

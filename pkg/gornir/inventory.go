@@ -1,9 +1,5 @@
 package gornir
 
-import (
-	"context"
-)
-
 // Host represent a host
 type Host struct {
 	err      error
@@ -20,16 +16,16 @@ type Inventory struct {
 }
 
 // FilterFunc is a function that can be used to filter the inventory
-type FilterFunc func(context.Context, *Host) bool
+type FilterFunc func(*Host) bool
 
 // Filter filters the hosts in the inventory returning a copy of the current
 // Inventory instance but with only the hosts that passed the filter
-func (i *Inventory) Filter(ctx context.Context, f FilterFunc) *Inventory {
+func (i *Inventory) Filter(f FilterFunc) *Inventory {
 	filtered := &Inventory{
 		Hosts: make(map[string]*Host),
 	}
 	for hostname, host := range i.Hosts {
-		if f(ctx, host) {
+		if f(host) {
 			filtered.Hosts[hostname] = host
 		}
 	}
