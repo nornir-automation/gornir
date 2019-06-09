@@ -32,4 +32,3 @@ func (t *testTaskSleep) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.
 	result.SetData(&testTaskSleepResults{success: true})
 	jobResult <- result
 }
-
