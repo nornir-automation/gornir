@@ -22,6 +22,10 @@ type RemoteCommandResults struct {
 	Stderr []byte // Stderr written by the command
 }
 
+func (r RemoteCommandResults) String() string {
+	return fmt.Sprintf("    stdout: %s\n    stderr: %s", r.Stdout, r.Stderr)
+}
+
 func (r *RemoteCommand) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: host.Username,
@@ -36,12 +40,12 @@ func (r *RemoteCommand) Run(ctx context.Context, host *gornir.Host) (interface{}
 	}
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Hostname, port), sshConfig)
 	if err != nil {
-		return &RemoteCommandResults{}, errors.Wrap(err, "failed to dial")
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to dial")
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
-		return &RemoteCommandResults{}, errors.Wrap(err, "failed to create session")
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to create session")
 	}
 	defer session.Close()
 
@@ -51,7 +55,7 @@ func (r *RemoteCommand) Run(ctx context.Context, host *gornir.Host) (interface{}
 	session.Stderr = &stderr
 
 	if err := session.Run(r.Command); err != nil {
-		return &RemoteCommandResults{}, errors.Wrap(err, "failed to execute command")
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to execute command")
 	}
-	return &RemoteCommandResults{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, nil
+	return RemoteCommandResults{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, nil
 }

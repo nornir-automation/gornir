@@ -3,8 +3,8 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
-	"sync"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
@@ -19,28 +19,29 @@ import (
 type getHostnameAndIP struct {
 }
 
-func (c *getHostnameAndIP) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jobResult chan *gornir.JobResult) {
-	// We instantiate a new object
-	result := gornir.NewJobResult(ctx, jp)
+type getHostnameAndIPResult struct {
+	SubResults []task.RemoteCommandResults
+}
 
-	defer wg.Done() // flag as completed
+func (r getHostnameAndIPResult) String() string {
+	return fmt.Sprintf("    hostname: %s    ip address: %s", r.SubResults[0].Stdout, r.SubResults[1].Stdout)
+}
 
-	// channel to store the subresults
-	sr := make(chan *gornir.JobResult, 1)
-
-	// We are going to execute two tasks so we need a sync.WaitGroup with two tokens
-	swg := &sync.WaitGroup{}
-	swg.Add(2)
-
+func (r *getHostnameAndIP) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {
 	// We call the first subtask and store the subresult
-	(&task.RemoteCommand{Command: "hostname"}).Run(ctx, swg, jp, sr)
-	result.AddSubResult(<-sr)
+	res1, err := (&task.RemoteCommand{Command: "hostname"}).Run(ctx, host)
+	if err != nil {
+		return getHostnameAndIPResult{}, err
+	}
 
 	// We call the second subtask and store the subresult
-	(&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"}).Run(ctx, swg, jp, sr)
-	result.AddSubResult(<-sr)
-
-	jobResult <- result
+	res2, err := (&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"}).Run(ctx, host)
+	if err != nil {
+		return getHostnameAndIPResult{}, err
+	}
+	return getHostnameAndIPResult{
+		SubResults: []task.RemoteCommandResults{res1.(task.RemoteCommandResults), res2.(task.RemoteCommandResults)},
+	}, nil
 }
 
 func main() {

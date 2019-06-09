@@ -3,7 +3,6 @@ package output
 import (
 	"fmt"
 	"io"
-	"reflect"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 )
@@ -56,20 +55,6 @@ func cyan(m string, color bool) string {
 	return m
 }
 
-func renderInterface(wr io.Writer, i interface{}) error {
-	if i == nil {
-		return nil
-	}
-	v := reflect.Indirect(reflect.ValueOf(i))
-	for i := 0; i < v.NumField(); i++ {
-		fieldName := v.Type().Field(i).Name
-		if _, err := wr.Write([]byte(fmt.Sprintf(" * %s: %s\n", fieldName, v.Field(i)))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color bool) error {
 	if renderHost {
 		var colorFunc func(string, bool) string
@@ -88,7 +73,7 @@ func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color
 			return err
 		}
 	} else {
-		if err := renderInterface(wr, result.Data()); err != nil {
+		if _, err := wr.Write([]byte(fmt.Sprintf("%s\n", result.Data()))); err != nil {
 			return err
 		}
 	}
