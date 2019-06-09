@@ -1,4 +1,6 @@
 language: go
+services:
+  - docker
 sudo: false
 go:
   - 1.11.x
@@ -8,12 +10,15 @@ os:
   - linux
   - osx
 matrix:
+  include:
+    - env: TEST_SUITE=lint
+    - env: TEST_SUITE=examples
   allow_failures:
     - go: tip
   fast_finish: true
 env:
-  - GO111MODULE=on GOPROXY=https://proxy.golang.org
+  - GO111MODULE=on GOPROXY=https://proxy.golang.org TEST_SUITE=unit
 script: 
-- go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+- make test-suite
 after_success:
   - bash <(curl -s https://codecov.io/bash)

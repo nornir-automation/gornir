@@ -1,5 +1,9 @@
 PROJECT="github.com/nornir-automation/gornir"
 
+.PHONY: tests
+tests:
+	go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+
 .PHONY: lint
 lint:
 	docker run \
@@ -8,6 +12,18 @@ lint:
 		-w /go/src/$(PROJECT) \
 		golangci/golangci-lint \
 			golangci-lint run
+
+.PHONY: test-suite
+test-suite:
+ifeq ($(TEST_SUITE),unit)
+	make tests
+else ifeq ($(TEST_SUITE),examples)
+	make test-examples
+else ifeq ($(TEST_SUITE),lint)
+	make lint
+else
+	echo "I don't know what '$(TEST_SUITE)' means"
+endif
 
 .PHONY: start-dev-env
 start-dev-env:
