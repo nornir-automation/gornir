@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -25,10 +24,7 @@ type testTaskSleepResults struct {
 	success bool
 }
 
-func (t *testTaskSleep) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jobResult chan *gornir.JobResult) {
-	defer wg.Done()
+func (t *testTaskSleep) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {
 	time.Sleep(t.sleepDuration)
-	result := gornir.NewJobResult(ctx, jp)
-	result.SetData(&testTaskSleepResults{success: true})
-	jobResult <- result
+	return testTaskSleepResults{success: true}, nil
 }

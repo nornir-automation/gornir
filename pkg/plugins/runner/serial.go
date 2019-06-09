@@ -41,7 +41,7 @@ func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[strin
 	for _, hostname := range sortedHostnames {
 		host := hosts[hostname]
 		logger.WithField("host", hostname).Debug("calling function")
-		task.Run(ctx, wg, jp.ForHost(host), results)
+		gornir.TaskWrapper(ctx, wg, task, jp.ForHost(host), results)
 	}
 	return nil
 }

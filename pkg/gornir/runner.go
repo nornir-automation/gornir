@@ -42,7 +42,7 @@ func (jp *JobParameters) ForHost(host *Host) *JobParameters {
 // the task is responsible to indicate its completion
 // by calling sync.WaitGroup.Done()
 type Task interface {
-	Run(context.Context, *sync.WaitGroup, *JobParameters, chan *JobResult)
+	Run(context.Context, *Host) (interface{}, error)
 }
 
 // Runner is the interface of a struct that can implement a strategy
@@ -58,16 +58,17 @@ type JobResult struct {
 	ctx        context.Context
 	jp         *JobParameters
 	err        error
-	changed    bool
 	data       interface{}
 	subResults []*JobResult
 }
 
 // NewJobResult instantiates a new JobResult
-func NewJobResult(ctx context.Context, jp *JobParameters) *JobResult {
+func NewJobResult(ctx context.Context, jp *JobParameters, data interface{}, err error) *JobResult {
 	return &JobResult{
-		ctx: ctx,
-		jp:  jp,
+		ctx:  ctx,
+		jp:   jp,
+		data: data,
+		err:  err,
 	}
 }
 
@@ -105,30 +106,6 @@ func (r *JobResult) SetErr(err error) {
 	r.JobParameters().Host().setErr(err)
 }
 
-// Changed will return whether the task changed something or not
-func (r *JobResult) Changed() bool {
-	return r.changed
-}
-
-// AnyChanged will return whether the task or any of its subtasks
-// changed something or not
-func (r *JobResult) AnyChanged() bool {
-	if r.changed {
-		return true
-	}
-	for _, s := range r.subResults {
-		if s.changed {
-			return true
-		}
-	}
-	return false
-}
-
-// SetChanged stores whether the task changed something or not
-func (r *JobResult) SetChanged(changed bool) {
-	r.changed = changed
-}
-
 // Data retrieves arbitrary data stored in the object
 func (r *JobResult) Data() interface{} {
 	return r.data
@@ -148,3 +125,11 @@ func (r *JobResult) SubResults() []*JobResult {
 func (r *JobResult) AddSubResult(result *JobResult) {
 	r.subResults = append(r.subResults, result)
 }
+
+func TaskWrapper(ctx context.Context, wg *sync.WaitGroup, taskFunc Task, jp *JobParameters, results chan *JobResult) {
+	defer wg.Done()
+	res, err := taskFunc.Run(ctx, jp.host)
+	jp.Host().setErr(err)
+	results <- NewJobResult(ctx, jp, res, err)
+}
+

@@ -32,7 +32,7 @@ func (r ParallelRunner) Run(ctx context.Context, task gornir.Task, hosts map[str
 
 	for hostname, host := range hosts {
 		logger.WithField("host", hostname).Debug("calling function")
-		go task.Run(ctx, r.wg, jp.ForHost(host), results)
+		go gornir.TaskWrapper(ctx, r.wg, task, jp.ForHost(host), results)
 	}
 	return nil
 }
