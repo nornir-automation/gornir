@@ -3,11 +3,7 @@
 [0m * Stdout: 10.21.33.101/24
 
  * Stderr: 
-  - err: <nil>
-
 [32m@ dev4.group_2
 [0m * Stdout: 10.21.33.104/24
 
  * Stderr: 
-  - err: <nil>
-
