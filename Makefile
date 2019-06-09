@@ -10,7 +10,8 @@ lint:
 		--rm \
 		-v $(PWD):/go/src/$(PROJECT) \
 		-w /go/src/$(PROJECT) \
-		golangci/golangci-lint \
+		-e GO111MODULE=on \
+		golangci/golangci-lint:v1.16 \
 			golangci-lint run
 
 .PHONY: test-suite
