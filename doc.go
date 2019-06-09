@@ -1,44 +1,44 @@
-// Package provides a pluggable framework with inventory management to help operate collections of devices.
-// It's similar to https://github.com/nornir-automation/nornir/ but in golang.
+// Package gornir provides a pluggable framework with inventory management to help operate
+// collections of devices.
+// It's similar to https://github.com/nornir-automation/nornir/ but in Go.
 //
 // The goal is to be able to operate on many devices with little effort. For instance:
 //
-//     package main
-//
-//     import (
-//     	"os"
-//
-//     	"github.com/nornir-automation/gornir/pkg/gornir"
-//     	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
-//     	"github.com/nornir-automation/gornir/pkg/plugins/logger"
-//     	"github.com/nornir-automation/gornir/pkg/plugins/output"
-//     	"github.com/nornir-automation/gornir/pkg/plugins/runner"
-//     	"github.com/nornir-automation/gornir/pkg/plugins/task"
-//     )
-//
-//     func main() {
-//     	logger := logger.NewLogrus(false)
-//
-//     	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
-//     	if err != nil {
-//     		logger.Fatal(err)
-//     	}
-//
-//     	gr := &gornir.Gornir{
-//     		Inventory: inventory,
-//     		Logger:    logger,
-//     	}
-//
-//     	results, err := gr.RunSync(
-//     		"What's my ip?",
-//     		runner.Parallel(),
-//     		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
-//     	)
-//     	if err != nil {
-//     		logger.Fatal(err)
-//     	}
-//     	output.RenderResults(os.Stdout, results, true)
-//     }
+// 	package main
+//	
+// 	import (
+// 		"os"
+//	
+// 		"github.com/nornir-automation/gornir/pkg/gornir"
+// 		"github.com/nornir-automation/gornir/pkg/plugins/inventory"
+// 		"github.com/nornir-automation/gornir/pkg/plugins/logger"
+// 		"github.com/nornir-automation/gornir/pkg/plugins/output"
+// 		"github.com/nornir-automation/gornir/pkg/plugins/runner"
+// 		"github.com/nornir-automation/gornir/pkg/plugins/task"
+// 	)
+//	
+// 	func main() {
+// 		log := logger.NewLogrus(false)
+//	
+// 		file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+// 		plugin := inventory.FromYAML{HostsFile: file}
+// 		inv, err := plugin.Create()
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+//	
+// 		gr := gornir.New().WithInventory(inv).WithLogger(log)
+//	
+// 		results, err := gr.RunSync(
+// 			"What's my ip?",
+// 			runner.Parallel(),
+// 			&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
+// 		)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		output.RenderResults(os.Stdout, results, true)
+// 	}
 //
 // would render:
 //

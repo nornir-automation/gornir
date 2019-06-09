@@ -22,17 +22,16 @@ import (
 )
 
 func main() {
-	logger := logger.NewLogrus(false)
+	log := logger.NewLogrus(false)
 
-	inventory, err := inventory.FromYAMLFile("/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml")
+	file := "/go/src/github.com/nornir-automation/gornir/examples/hosts.yaml"
+	plugin := inventory.FromYAML{HostsFile: file}
+	inv, err := plugin.Create()
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	gr := &gornir.Gornir{
-		Inventory: inventory,
-		Logger:    logger,
-	}
+	gr := gornir.New().WithInventory(inv).WithLogger(log)
 
 	results, err := gr.RunSync(
 		"What's my ip?",
@@ -40,7 +39,7 @@ func main() {
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	output.RenderResults(os.Stdout, results, true)
 }
