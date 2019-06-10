@@ -24,6 +24,7 @@ func TestRead(t *testing.T) {
 		{name: "From no file", input: "", err: noFileErr},
 	}
 	for _, tc := range tt {
+		tc := tc // lock the variable
 		t.Run(tc.name, func(t *testing.T) {
 			plugin := inventory.FromYAML{HostsFile: tc.input}
 			inv, err := plugin.Create()
@@ -51,7 +52,6 @@ func TestBuild(t *testing.T) {
 	tt := []struct {
 		name   string
 		input  string
-		err    string
 		filter gornir.FilterFunc
 		length int
 	}{
@@ -59,6 +59,7 @@ func TestBuild(t *testing.T) {
 		{name: "With Filter 2", input: file, filter: f2, length: 0},
 	}
 	for _, tc := range tt {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			plugin := inventory.FromYAML{HostsFile: tc.input}
 			inv, err := plugin.Create()

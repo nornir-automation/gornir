@@ -30,7 +30,7 @@ func main() {
 
 	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
-	rnr := runner.Parallel()
+	rnr := runner.Sorted()
 
 	// The following call will not block
 	err = gr.RunAsync(
@@ -61,7 +61,11 @@ func main() {
 				// channel is closed
 				return
 			}
-			fmt.Println(res)
+			if res.Err() != nil {
+				fmt.Printf("ERROR: %s: %s\n", res.JobParameters().Host().Hostname, res.Err().Error())
+			} else {
+				fmt.Printf("OK: %s: %s\n", res.JobParameters().Host().Hostname, res.Data().(*task.RemoteCommandResults).Stdout)
+			}
 		case <-time.After(time.Second * 10):
 			return
 		}

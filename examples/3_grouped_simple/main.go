@@ -16,10 +16,10 @@ import (
 
 // This is a grouped task, it will allow us to build our own task
 // leveraging other tasks
-type checkMemoryAndCPU struct {
+type getHostnameAndIP struct {
 }
 
-func (c *checkMemoryAndCPU) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jobResult chan *gornir.JobResult) {
+func (c *getHostnameAndIP) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jobResult chan *gornir.JobResult) {
 	// We instantiate a new object
 	result := gornir.NewJobResult(ctx, jp)
 
@@ -33,11 +33,11 @@ func (c *checkMemoryAndCPU) Run(ctx context.Context, wg *sync.WaitGroup, jp *gor
 	swg.Add(2)
 
 	// We call the first subtask and store the subresult
-	(&task.RemoteCommand{Command: "free -m"}).Run(ctx, swg, jp, sr)
+	(&task.RemoteCommand{Command: "hostname"}).Run(ctx, swg, jp, sr)
 	result.AddSubResult(<-sr)
 
 	// We call the second subtask and store the subresult
-	(&task.RemoteCommand{Command: "uptime"}).Run(ctx, swg, jp, sr)
+	(&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"}).Run(ctx, swg, jp, sr)
 	result.AddSubResult(<-sr)
 
 	jobResult <- result
@@ -59,8 +59,8 @@ func main() {
 
 	results, err := gr.RunSync(
 		"Let's run a couple of commands",
-		runner.Parallel(),
-		&checkMemoryAndCPU{},
+		runner.Sorted(),
+		&getHostnameAndIP{},
 	)
 	if err != nil {
 		log.Fatal(err)
