@@ -3,7 +3,10 @@ version: '2.1'
 
 services:
     gornir:
-        image: golang:1.12-stretch
+        image: gornir-base
+        build:
+            context: .
+            dockerfile: Dockerfile
         extra_hosts:
             - "dev1.group_1:10.21.33.101"
             - "dev2.group_1:10.21.33.102"
