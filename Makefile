@@ -12,6 +12,7 @@ lint:
 		-v $(PWD):/go/src/$(PROJECT) \
 		-w /go/src/$(PROJECT) \
 		-e GO111MODULE=on \
+		-e GOPROXY=https://proxy.golang.org \
 		golangci/golangci-lint:$(GOLANGCI_LINT_VER) \
 			golangci-lint run
 
