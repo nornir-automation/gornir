@@ -25,7 +25,7 @@ func TestParallel(t *testing.T) {
 		{
 			name:          "simple test",
 			expected:      map[string]bool{"dev1": true, "dev2": true, "dev3": true, "dev4": true},
-			sleepDuration: 100 * time.Millisecond,
+			sleepDuration: 200 * time.Millisecond,
 		},
 	}
 	for _, tc := range testCases {
@@ -58,7 +58,7 @@ func TestParallel(t *testing.T) {
 				t.Error(cmp.Diff(got, tc.expected))
 			}
 			// now we check test took what we expected
-			if time.Since(startTime) > (tc.sleepDuration + time.Millisecond*30) {
+			if time.Since(startTime) > (tc.sleepDuration + time.Millisecond*50) {
 				t.Errorf("test took to long, parallelization might not be working: %v\n", time.Since(startTime).Seconds())
 			}
 		})
