@@ -58,7 +58,7 @@ func TestParallel(t *testing.T) {
 				t.Error(cmp.Diff(got, tc.expected))
 			}
 			// now we check test took what we expected
-			if time.Since(startTime) > (tc.sleepDuration + time.Millisecond*10) {
+			if time.Since(startTime) > (tc.sleepDuration + time.Millisecond*30) {
 				t.Errorf("test took to long, parallelization might not be working: %v\n", time.Since(startTime).Seconds())
 			}
 		})
