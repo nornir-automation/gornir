@@ -34,11 +34,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log)
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(runner.Parallel())
 
 	results, err := gr.RunSync(
 		"What's my ip?",
-		runner.Parallel(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
