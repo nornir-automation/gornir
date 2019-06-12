@@ -59,6 +59,7 @@ _test-examples:
 	# auth methods change causing the error of dev5 to be slightly different
 	make test-example EXAMPLE=1_simple || make test-example EXAMPLE=1_simple
 	make test-example EXAMPLE=2_simple_with_filter || make test-example EXAMPLE=2_simple_with_filter
+	make test-example EXAMPLE=2_simple_with_filter_bis || make test-example EXAMPLE=2_simple_with_filter_bis
 	make test-example EXAMPLE=3_grouped_simple || make test-example EXAMPLE=3_grouped_simple
 	make test-example EXAMPLE=4_advanced_1 || make test-example EXAMPLE=4_advanced_1
 	make test-example EXAMPLE=5_advanced_2 || make test-example EXAMPLE=5_advanced_2

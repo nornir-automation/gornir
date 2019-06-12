@@ -32,7 +32,8 @@ func (i *Inventory) Filter(f FilterFunc) *Inventory {
 	return filtered
 }
 
-func (h *Host) setErr(err error) {
+// SetErr stores the error in the host
+func (h *Host) SetErr(err error) {
 	h.err = err
 }
 
