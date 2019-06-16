@@ -1,3 +1,6 @@
 coverage.txt
 
+# following file is a leftover of calling make test-example without the proper argument
+examples/output.txt
+
 vendor/

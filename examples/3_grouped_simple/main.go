@@ -55,11 +55,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log)
+	rnr := runner.Sorted()
+
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
 	results, err := gr.RunSync(
 		"Let's run a couple of commands",
-		runner.Sorted(),
 		&getHostnameAndIP{},
 	)
 	if err != nil {
