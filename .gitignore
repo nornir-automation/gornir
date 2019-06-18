@@ -4,3 +4,4 @@ coverage.txt
 examples/output.txt
 
 vendor/
+**/.DS_Store
