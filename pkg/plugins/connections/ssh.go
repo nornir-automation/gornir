@@ -34,7 +34,7 @@ func (c *SSHConn) Open() error {
 		User:            c.Username,
 		Auth:            []ssh.AuthMethod{ssh.Password(c.Password)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         6 * time.Second}
+		Timeout:         6 * time.Second} // #nosec
 
 	sshConfig.Ciphers = append(sshConfig.Ciphers, ciphers...)
 	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
