@@ -3,10 +3,11 @@ package task
 
 import (
 	"context"
+	"sync"
+
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	"github.com/nornir-automation/gornir/pkg/plugins/connections"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 // RemoteCommand will connect to the Host via ssh and execute the given command
