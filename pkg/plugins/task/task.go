@@ -27,7 +27,7 @@ func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.
 
 	conn := connections.NewSSHConn(host.Hostname, port, host.Username, host.Password)
 	if err := conn.Open(); err != nil {
-		result.SetErr(errors.Wrap(err, "failed to Open Device"))
+		result.SetErr(errors.Wrap(err, "failed to open device"))
 		jobResult <- result
 		return
 	}

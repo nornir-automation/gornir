@@ -63,8 +63,8 @@
 [0m  - err: <nil>
 
 [36m**** subtask 0
-[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+[0m  - err: failed to open device: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
 
 [36m**** subtask 1
-[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+[0m  - err: failed to open device: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
 
