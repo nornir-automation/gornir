@@ -1,8 +1,8 @@
 package connections
 
 import (
+	gomiko "github.com/Ali-aqrabawi/gomiko/pkg"
 	"github.com/Ali-aqrabawi/gomiko/pkg/types"
-	"github.com/Ali-aqrabawi/gomiko/pkg"
 )
 
 type GomikoConn struct {
