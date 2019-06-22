@@ -6,4 +6,4 @@ OK: dev3.group_2: dev3.group_2
 
 OK: dev4.group_2: dev4.group_2
 
-ERROR: dev5.no_group: failed to open device: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+ERROR: dev5.no_group: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain

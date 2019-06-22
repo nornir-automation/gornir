@@ -24,5 +24,5 @@
   - err: <nil>
 
 [31m@ dev5.no_group
-[0m  - err: failed to open device: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
 
