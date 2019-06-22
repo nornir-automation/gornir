@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/nornir-automation/gornir/pkg/plugins/connections"
 	"time"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -63,7 +64,7 @@ func main() {
 			if res.Err() != nil {
 				fmt.Printf("ERROR: %s: %s\n", res.JobParameters().Host().Hostname, res.Err().Error())
 			} else {
-				fmt.Printf("OK: %s: %s\n", res.JobParameters().Host().Hostname, res.Data().(*task.RemoteCommandResults).Stdout)
+				fmt.Printf("OK: %s: %s\n", res.JobParameters().Host().Hostname, res.Data().(*connections.RemoteCommandResults).Stdout)
 			}
 		case <-time.After(time.Second * 10):
 			return
