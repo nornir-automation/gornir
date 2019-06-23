@@ -3,13 +3,12 @@ package task
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	"github.com/nornir-automation/gornir/pkg/plugins/connection"
 
 	"github.com/pkg/errors"
-	"golang.org/x/crypto/ssh"
 )
 
 // RemoteCommand will connect to the Host via ssh and execute the given command
@@ -28,31 +27,20 @@ func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.
 	host := jp.Host()
 	result := gornir.NewJobResult(ctx, jp)
 
-	sshConfig := &ssh.ClientConfig{
-		User: host.Username,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(host.Password),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	} // #nosec
-	port := host.Port
-	if port == 0 {
-		port = 22
-	}
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Hostname, port), sshConfig)
+	conn, err := host.GetConnection("ssh")
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to dial"))
+		result.SetErr(errors.Wrap(err, "failed to retrieve connection"))
 		jobResult <- result
 		return
 	}
+	sshConn := conn.(*connection.SSH)
 
-	session, err := client.NewSession()
+	session, err := sshConn.Client.NewSession()
 	if err != nil {
 		result.SetErr(errors.Wrap(err, "failed to create session"))
 		jobResult <- result
 		return
 	}
-	defer session.Close()
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
