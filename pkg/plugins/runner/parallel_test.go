@@ -29,7 +29,7 @@ func TestParallel(t *testing.T) {
 		},
 	}
 
-	testHosts = map[string]*gornir.Host{
+	testHosts := map[string]*gornir.Host{
 		"dev1": {Hostname: "dev1"},
 		"dev2": {Hostname: "dev2"},
 		"dev3": {Hostname: "dev3"},
