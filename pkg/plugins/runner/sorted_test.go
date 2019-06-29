@@ -8,7 +8,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
-	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 )
 
@@ -44,7 +43,7 @@ func TestSorted(t *testing.T) {
 				context.Background(),
 				&testTaskSleep{sleepDuration: tc.sleepDuration},
 				testHosts,
-				gornir.NewJobParameters("test", logger.NewLogrus(false)),
+				gornir.NewJobParameters("test", NewNull()),
 				results,
 			); err != nil {
 				t.Fatal(err)
