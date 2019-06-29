@@ -102,7 +102,7 @@ func (r *JobResult) AnyErr() error {
 // SetErr stores the error  and also propagates it to the associated Host
 func (r *JobResult) SetErr(err error) {
 	r.err = err
-	r.JobParameters().Host().setErr(err)
+	r.JobParameters().Host().SetErr(err)
 }
 
 // Changed will return whether the task changed something or not
