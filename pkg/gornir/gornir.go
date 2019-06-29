@@ -15,6 +15,7 @@ import (
 type Gornir struct {
 	Inventory *Inventory // Inventory for the object
 	Logger    Logger     // Logger for the object
+	Runner    Runner     // Runner that will be used to run the task
 }
 
 // New is a Gornir constructor. It is currently no different that new,
@@ -23,39 +24,52 @@ func New() *Gornir {
 	return new(Gornir)
 }
 
-// WithInventory creates a new Gornir with an Inventory.
-func (gr *Gornir) WithInventory(inv Inventory) *Gornir {
+// Clone returns a new instance of Gornir with the same attributes as the receiver
+func (gr *Gornir) Clone() *Gornir {
 	return &Gornir{
-		Inventory: &inv,
+		Inventory: gr.Inventory,
 		Logger:    gr.Logger,
+		Runner:    gr.Runner,
 	}
+}
+
+// WithRunner returns a clone of the current Gornir but with the given runner
+func (gr *Gornir) WithRunner(rnr Runner) *Gornir {
+	c := gr.Clone()
+	c.Runner = rnr
+	return c
+}
+
+// WithInventory returns a clone of the current Gornir but with the given inventory
+func (gr *Gornir) WithInventory(inv Inventory) *Gornir {
+	c := gr.Clone()
+	c.Inventory = &inv
+	return c
 }
 
 // Filter creates a new Gornir with a filtered Inventory.
 // It filters the hosts in the inventory returning a copy of the current
 // Gornir instance but with only the hosts that passed the filter.
 func (gr *Gornir) Filter(f FilterFunc) *Gornir {
-	return &Gornir{
-		Inventory: gr.Inventory.Filter(f),
-		Logger:    gr.Logger,
-	}
+	c := gr.Clone()
+	c.Inventory = c.Inventory.Filter(f)
+	return c
 }
 
-// WithLogger creates a new Gornir with a Logger.
+// WithLogger returns a clone of the current Gornir but with the given logger
 func (gr *Gornir) WithLogger(l Logger) *Gornir {
-	return &Gornir{
-		Inventory: gr.Inventory,
-		Logger:    l,
-	}
+	c := gr.Clone()
+	c.Logger = l
+	return c
 }
 
 // RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
-func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResult, error) {
+func (gr *Gornir) RunSync(title string, task Task) (chan *JobResult, error) {
 	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
 	defer close(results)
-	err := runner.Run(
+	err := gr.Runner.Run(
 		context.Background(),
 		task,
 		gr.Inventory.Hosts,
@@ -65,7 +79,7 @@ func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResu
 	if err != nil {
 		return results, errors.Wrap(err, "problem calling runner")
 	}
-	if err := runner.Wait(); err != nil {
+	if err := gr.Runner.Wait(); err != nil {
 		return results, errors.Wrap(err, "problem waiting for runner")
 	}
 	return results, nil
@@ -74,9 +88,9 @@ func (gr *Gornir) RunSync(title string, runner Runner, task Task) (chan *JobResu
 // RunAsync will execute the task over the hosts in the inventory using the given runner.
 // This function doesn't block, the user can use the method Runnner.Wait instead.
 // It's also up to the user to ennsure the channel is closed
-func (gr *Gornir) RunAsync(ctx context.Context, title string, runner Runner, task Task, results chan *JobResult) error {
+func (gr *Gornir) RunAsync(ctx context.Context, title string, task Task, results chan *JobResult) error {
 	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
-	err := runner.Run(
+	err := gr.Runner.Run(
 		ctx,
 		task,
 		gr.Inventory.Hosts,
