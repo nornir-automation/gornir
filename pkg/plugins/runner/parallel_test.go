@@ -29,6 +29,14 @@ func TestParallel(t *testing.T) {
 			sleepDuration: 200 * time.Millisecond,
 		},
 	}
+
+	testHosts = map[string]*gornir.Host{
+		"dev1": {Hostname: "dev1"},
+		"dev2": {Hostname: "dev2"},
+		"dev3": {Hostname: "dev3"},
+		"dev4": {Hostname: "dev4"},
+	}
+
 	for _, tc := range testCases {
 		tc := tc
 		results := make(chan *gornir.JobResult, len(testHosts))
