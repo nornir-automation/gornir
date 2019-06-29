@@ -1,0 +1,13 @@
+---
+dev1.group_1:
+    port: 22
+    hostname: dev1.group_1
+    username: root
+    password: docker
+
+dev2.group_1:
+    port: 22
+  hostname: dev2.group_1
+    username: root
+    password: docker
+

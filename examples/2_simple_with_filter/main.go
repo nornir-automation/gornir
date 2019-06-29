@@ -29,13 +29,14 @@ func main() {
 		return h.Hostname == "dev1.group_1" || h.Hostname == "dev4.group_2"
 	}
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log)
+	rnr := runner.Sorted()
+
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
 	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
 	// above. This will narrow down the inventor to the hosts matching the filter
 	results, err := gr.Filter(filter).RunSync(
 		"What's my ip?",
-		runner.Sorted(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {

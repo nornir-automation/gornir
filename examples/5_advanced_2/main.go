@@ -26,17 +26,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log)
+	rnr := runner.Sorted()
+
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
 	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
-
-	rnr := runner.Sorted()
 
 	// The following call will not block
 	err = gr.RunAsync(
 		context.Background(),
 		"What's my hostname?",
-		rnr,
 		&task.RemoteCommand{Command: "hostname"},
 		results,
 	)
