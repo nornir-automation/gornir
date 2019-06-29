@@ -1,4 +1,4 @@
-package runner
+package runner_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
+	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 )
 
 // TestParallel is going to check that the func runs on all hosts
@@ -32,7 +33,7 @@ func TestParallel(t *testing.T) {
 		tc := tc
 		results := make(chan *gornir.JobResult, len(testHosts))
 		t.Run(tc.name, func(t *testing.T) {
-			rnr := Parallel()
+			rnr := runner.Parallel()
 			startTime := time.Now()
 			if err := rnr.Run(
 				context.Background(),

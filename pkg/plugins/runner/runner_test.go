@@ -1,4 +1,4 @@
-package runner
+package runner_test
 
 import (
 	"context"

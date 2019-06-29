@@ -1,4 +1,4 @@
-package runner
+package runner_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
+	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 )
 
 // TestSorted runs test func and verifies the hosts are executed
@@ -30,7 +31,7 @@ func TestSorted(t *testing.T) {
 		tc := tc
 		results := make(chan *gornir.JobResult, len(testHosts))
 		t.Run(tc.name, func(t *testing.T) {
-			rnr := Sorted()
+			rnr := runner.Sorted()
 			if err := rnr.Run(
 				context.Background(),
 				&testTaskSleep{sleepDuration: tc.sleepDuration},
