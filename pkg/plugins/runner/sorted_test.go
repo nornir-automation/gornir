@@ -21,7 +21,7 @@ func TestSorted(t *testing.T) {
 		sleepDuration time.Duration
 	}{
 		{
-			name:          "simple test",
+			name:          "run in alphabetical order",
 			expected:      []string{"dev1", "dev2", "dev3", "dev4"},
 			sleepDuration: 1 * time.Millisecond,
 		},
