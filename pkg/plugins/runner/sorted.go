@@ -13,10 +13,12 @@ import (
 type SortedRunner struct {
 }
 
+// Sorted returns an instantiated SortedRunner
 func Sorted() *SortedRunner {
 	return &SortedRunner{}
 }
 
+// Run implements the Run method of the gornir.Runner interface
 func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[string]*gornir.Host, jp *gornir.JobParameters, results chan *gornir.JobResult) error {
 	logger := jp.Logger().WithField("runner", "Sorted")
 	logger.Debug("starting runner")
@@ -44,10 +46,12 @@ func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[strin
 	return nil
 }
 
+// Wait implements the Wait method of the gornir.Runner interface
 func (r SortedRunner) Wait() error {
 	return nil
 }
 
+// Close implements the Close method of the gornir.Runner interface
 func (r SortedRunner) Close() error {
 	return nil
 }

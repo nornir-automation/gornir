@@ -1,4 +1,5 @@
 PROJECT="github.com/nornir-automation/gornir"
+GOLANGCI_LINT_VER="v1.17"
 
 .PHONY: tests
 tests:
@@ -12,7 +13,7 @@ lint:
 		-w /go/src/$(PROJECT) \
 		-e GO111MODULE=on \
 		-e GOPROXY=https://proxy.golang.org \
-		golangci/golangci-lint \
+		golangci/golangci-lint:$(GOLANGCI_LINT_VER) \
 			golangci-lint run
 
 .PHONY: test-suite
