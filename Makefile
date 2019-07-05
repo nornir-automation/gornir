@@ -1,12 +1,13 @@
 PROJECT="github.com/nornir-automation/gornir"
 GOLANGCI_LINT_VER="v1.17"
+.DEFAULT_GOAL := help
 
 .PHONY: tests
-tests:
+tests: ## Run Go test tool
 	go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 .PHONY: lint
-lint:
+lint: ## Run Go linters in a Docker container
 	docker run \
 		--rm \
 		-v $(PWD):/go/src/$(PROJECT) \
@@ -29,26 +30,25 @@ else
 endif
 
 .PHONY: start-dev-env
-start-dev-env:
+start-dev-env: ## Create a development enviroment
 	docker-compose up -d
 
 .PHONY: stop-dev-env
-stop-dev-env:
+stop-dev-env: ## Bring down the development enviroment
 	docker-compose down
 
 .PHONY: example
-example:
+example: ## Run a given example
 	docker-compose run gornir \
 		go run /go/src/github.com/nornir-automation/gornir/examples/$(EXAMPLE)/main.go
 
 .PHONY: godoc
-godoc:
+godoc: ## Run Go Docs in a container in port 6060
 	docker-compose run -p 6060:6060 gornir \
 		godoc -http 0.0.0.0:6060 -v
 
-
 .PHONY: test-example
-test-example:
+test-example: ## Check example output changes
 	docker-compose run gornir \
 		go run /go/src/github.com/nornir-automation/gornir/examples/$(EXAMPLE)/main.go > examples/$(EXAMPLE)/output.txt
 	git diff --exit-code examples/$(EXAMPLE)/output.txt
@@ -66,3 +66,7 @@ _test-examples:
 
 .PHONY: test-examples
 test-examples: start-dev-env _test-examples stop-dev-env
+
+.PHONY: help
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
