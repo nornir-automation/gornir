@@ -1,4 +1,4 @@
-package runner
+package runner_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
-	"github.com/nornir-automation/gornir/pkg/plugins/logger"
+	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 )
 
 // TestParallel is going to check that the func runs on all hosts
@@ -25,20 +25,28 @@ func TestParallel(t *testing.T) {
 		{
 			name:          "simple test",
 			expected:      map[string]bool{"dev1": true, "dev2": true, "dev3": true, "dev4": true},
-			sleepDuration: 100 * time.Millisecond,
+			sleepDuration: 200 * time.Millisecond,
 		},
 	}
+
+	testHosts := map[string]*gornir.Host{
+		"dev1": {Hostname: "dev1"},
+		"dev2": {Hostname: "dev2"},
+		"dev3": {Hostname: "dev3"},
+		"dev4": {Hostname: "dev4"},
+	}
+
 	for _, tc := range testCases {
 		tc := tc
 		results := make(chan *gornir.JobResult, len(testHosts))
 		t.Run(tc.name, func(t *testing.T) {
-			rnr := Parallel()
+			rnr := runner.Parallel()
 			startTime := time.Now()
 			if err := rnr.Run(
 				context.Background(),
 				&testTaskSleep{sleepDuration: tc.sleepDuration},
 				testHosts,
-				gornir.NewJobParameters("test", logger.NewLogrus(false)),
+				gornir.NewJobParameters("test", NewNullLogger()),
 				results,
 			); err != nil {
 				t.Fatal(err)
@@ -52,16 +60,15 @@ func TestParallel(t *testing.T) {
 			// compare with our expected value
 			got := make(map[string]bool)
 			for res := range results {
-				got[res.JobParameters().Host().Hostname] = res.Data().(testTaskSleepResults).success
+				got[res.JobParameters().Host().Hostname] = res.Data().(*testTaskSleepResults).success
 			}
 			if !cmp.Equal(got, tc.expected) {
 				t.Error(cmp.Diff(got, tc.expected))
 			}
 			// now we check test took what we expected
-			if time.Since(startTime) > (tc.sleepDuration + time.Millisecond*10) {
+			if time.Since(startTime) > (tc.sleepDuration + time.Millisecond*100) {
 				t.Errorf("test took to long, parallelization might not be working: %v\n", time.Since(startTime).Seconds())
 			}
 		})
 	}
-
 }

@@ -33,7 +33,7 @@ func (r *RemoteCommand) Run(ctx context.Context, host *gornir.Host) (interface{}
 			ssh.Password(host.Password),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
+	} // #nosec
 	port := host.Port
 	if port == 0 {
 		port = 22

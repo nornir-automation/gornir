@@ -1,10 +1,11 @@
-// Similar to the simple example but filtering the hosts
+// Similar to the simple_with_filter but leveraging included filters
 package main
 
 import (
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	f "github.com/nornir-automation/gornir/pkg/plugins/filter"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
@@ -24,14 +25,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// define a function we will use to filter the hosts
-	filter := func(h *gornir.Host) bool {
-		return h.Hostname == "dev1.group_1" || h.Hostname == "dev4.group_2"
-	}
+	// this time our filter is composed from various FilterFunc
+	filter := f.Or(f.WithHostname("dev1.group_1"), f.WithHostname("dev4.group_2"))
 
-	rnr := runner.Sorted()
-
-	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(runner.Sorted())
 
 	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
 	// above. This will narrow down the inventor to the hosts matching the filter

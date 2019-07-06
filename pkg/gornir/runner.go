@@ -88,7 +88,7 @@ func (r *JobResult) Err() error {
 // SetErr stores the error  and also propagates it to the associated Host
 func (r *JobResult) SetErr(err error) {
 	r.err = err
-	r.JobParameters().Host().setErr(err)
+	r.JobParameters().Host().SetErr(err)
 }
 
 // Data retrieves arbitrary data stored in the object
@@ -104,6 +104,6 @@ func (r *JobResult) SetData(data interface{}) {
 func TaskWrapper(ctx context.Context, wg *sync.WaitGroup, taskFunc Task, jp *JobParameters, results chan *JobResult) {
 	defer wg.Done()
 	res, err := taskFunc.Run(ctx, jp.host)
-	jp.Host().setErr(err)
+	jp.Host().SetErr(err)
 	results <- NewJobResult(ctx, jp, res, err)
 }

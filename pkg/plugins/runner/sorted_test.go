@@ -1,4 +1,4 @@
-package runner
+package runner_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
-	"github.com/nornir-automation/gornir/pkg/plugins/logger"
+	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 )
 
 // TestSorted runs test func and verifies the hosts are executed
@@ -21,21 +21,29 @@ func TestSorted(t *testing.T) {
 		sleepDuration time.Duration
 	}{
 		{
-			name:          "simple test",
+			name:          "run in alphabetical order",
 			expected:      []string{"dev1", "dev2", "dev3", "dev4"},
 			sleepDuration: 1 * time.Millisecond,
 		},
 	}
+
+	testHosts := map[string]*gornir.Host{
+		"dev1": {Hostname: "dev1"},
+		"dev2": {Hostname: "dev2"},
+		"dev3": {Hostname: "dev3"},
+		"dev4": {Hostname: "dev4"},
+	}
+
 	for _, tc := range testCases {
 		tc := tc
 		results := make(chan *gornir.JobResult, len(testHosts))
 		t.Run(tc.name, func(t *testing.T) {
-			rnr := Sorted()
+			rnr := runner.Sorted()
 			if err := rnr.Run(
 				context.Background(),
 				&testTaskSleep{sleepDuration: tc.sleepDuration},
 				testHosts,
-				gornir.NewJobParameters("test", logger.NewLogrus(false)),
+				gornir.NewJobParameters("test", NewNullLogger()),
 				results,
 			); err != nil {
 				t.Fatal(err)

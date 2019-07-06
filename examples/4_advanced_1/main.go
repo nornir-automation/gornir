@@ -25,19 +25,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log)
+	rnr := runner.Sorted()
 
-	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
 	// We need to store the runner as we will need to check its completion later on
 	// by calling rnr.Wait()
 	rnr := runner.Sorted()
+	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
 	// Gornir.RunAsync doesn't block so it's up to the user to check the runner is done
 	err = gr.RunAsync(
 		context.Background(),
 		"What's my hostname?",
-		rnr,
 		&task.RemoteCommand{Command: "hostname"},
 		results,
 	)

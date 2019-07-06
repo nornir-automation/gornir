@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 panic: interface conversion: interface {} is *task.RemoteCommandResults, not task.RemoteCommandResults
 
 goroutine 1 [running]:
@@ -12,3 +13,75 @@ github.com/nornir-automation/gornir/pkg/gornir.(*Gornir).RunSync(0xc00009df40, 0
 main.main()
 	/go/src/github.com/nornir-automation/gornir/examples/3_grouped_simple/main.go:56 +0x203
 exit status 2
+=======
+[34m# Let's run a couple of commands
+[0m[32m@ dev1.group_1
+[0m  - err: <nil>
+
+[36m**** subtask 0
+[0m * Stdout: dev1.group_1
+
+ * Stderr: 
+  - err: <nil>
+
+[36m**** subtask 1
+[0m * Stdout: 10.21.33.101/24
+
+ * Stderr: 
+  - err: <nil>
+
+[32m@ dev2.group_1
+[0m  - err: <nil>
+
+[36m**** subtask 0
+[0m * Stdout: dev2.group_1
+
+ * Stderr: 
+  - err: <nil>
+
+[36m**** subtask 1
+[0m * Stdout: 10.21.33.102/24
+
+ * Stderr: 
+  - err: <nil>
+
+[32m@ dev3.group_2
+[0m  - err: <nil>
+
+[36m**** subtask 0
+[0m * Stdout: dev3.group_2
+
+ * Stderr: 
+  - err: <nil>
+
+[36m**** subtask 1
+[0m * Stdout: 10.21.33.103/24
+
+ * Stderr: 
+  - err: <nil>
+
+[32m@ dev4.group_2
+[0m  - err: <nil>
+
+[36m**** subtask 0
+[0m * Stdout: dev4.group_2
+
+ * Stderr: 
+  - err: <nil>
+
+[36m**** subtask 1
+[0m * Stdout: 10.21.33.104/24
+
+ * Stderr: 
+  - err: <nil>
+
+[31m@ dev5.no_group
+[0m  - err: <nil>
+
+[36m**** subtask 0
+[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+
+[36m**** subtask 1
+[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+
+>>>>>>> 47b5eb30cbcf56d11424f30ccdca34304d32318e
