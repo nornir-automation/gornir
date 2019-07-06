@@ -16,12 +16,15 @@ import (
 
 // This is a grouped task, it will allow us to build our own task
 // leveraging other tasks
+type getHostnameAndIP struct {
+}
+
 type getHostnameAndIPResult struct {
 	SubResults []task.RemoteCommandResults
 }
 
 func (r getHostnameAndIPResult) String() string {
-	return fmt.Sprintf("    hostname: %s    ip address: %s", r.SubResults[0].Stdout, r.SubResults[1].Stdout)
+	return fmt.Sprintf("  - hostname: %s  - ip address: %s", r.SubResults[0].Stdout, r.SubResults[1].Stdout)
 }
 
 func (r *getHostnameAndIP) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {

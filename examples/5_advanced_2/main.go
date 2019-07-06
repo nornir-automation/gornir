@@ -30,11 +30,7 @@ func main() {
 
 	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
-<<<<<<< HEAD
-	rnr := runner.Sorted()
-=======
 	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
->>>>>>> 47b5eb30cbcf56d11424f30ccdca34304d32318e
 
 	// The following call will not block
 	err = gr.RunAsync(
@@ -67,7 +63,7 @@ func main() {
 			if res.Err() != nil {
 				fmt.Printf("ERROR: %s: %s\n", res.JobParameters().Host().Hostname, res.Err().Error())
 			} else {
-				fmt.Printf("OK: %s: %s\n", res.JobParameters().Host().Hostname, res.Data().(*task.RemoteCommandResults).Stdout)
+				fmt.Printf("OK: %s: %s\n", res.JobParameters().Host().Hostname, res.Data().(task.RemoteCommandResults).Stdout)
 			}
 		case <-time.After(time.Second * 10):
 			return

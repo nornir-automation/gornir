@@ -13,7 +13,7 @@ const (
 	// yellowColor = "\u001b[33m"
 	blueColor = "\u001b[34m"
 	// magentaColor = "\u001b[35m"
-	cyanColor  = "\u001b[36m"
+	// cyanColor  = "\u001b[36m"
 	resetColor = "\u001b[0m"
 )
 
@@ -48,18 +48,18 @@ func blue(m string, color bool) string {
 // func magenta(m string) string {
 //     return fmt.Sprintf("%v%v%v", magentaColor, m, resetColor)
 // }
-func cyan(m string, color bool) string {
-	if color {
-		return fmt.Sprintf("%v%v%v", cyanColor, m, resetColor)
-	}
-	return m
-}
+// func cyan(m string, color bool) string {
+//     if color {
+//         return fmt.Sprintf("%v%v%v", cyanColor, m, resetColor)
+//     }
+//     return m
+// }
 
 func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color bool) error {
 	if renderHost {
 		var colorFunc func(string, bool) string
 		switch {
-		case result.AnyErr() != nil:
+		case result.Err() != nil:
 			colorFunc = red
 		default:
 			colorFunc = green
@@ -78,14 +78,6 @@ func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color
 		}
 	}
 
-	for i, r := range result.SubResults() {
-		if _, err := wr.Write([]byte(cyan(fmt.Sprintf("**** subtask %d\n", i), color))); err != nil {
-			return err
-		}
-		if err := renderResult(wr, r, false, color); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 

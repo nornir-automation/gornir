@@ -23,7 +23,7 @@ type RemoteCommandResults struct {
 }
 
 func (r RemoteCommandResults) String() string {
-	return fmt.Sprintf("    stdout: %s\n    stderr: %s", r.Stdout, r.Stderr)
+	return fmt.Sprintf("  - stdout: %s\n  - stderr: %s", r.Stdout, r.Stderr)
 }
 
 func (r *RemoteCommand) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {

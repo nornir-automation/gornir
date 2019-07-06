@@ -1,19 +1,10 @@
-package runner
+package runner_test
 
 import (
 	"context"
 	"time"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
-)
-
-var (
-	testHosts = map[string]*gornir.Host{
-		"dev1": {Hostname: "dev1"},
-		"dev2": {Hostname: "dev2"},
-		"dev3": {Hostname: "dev3"},
-		"dev4": {Hostname: "dev4"},
-	}
 )
 
 type testTaskSleep struct {
@@ -27,4 +18,38 @@ type testTaskSleepResults struct {
 func (t *testTaskSleep) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {
 	time.Sleep(t.sleepDuration)
 	return testTaskSleepResults{success: true}, nil
+}
+
+// Null is a logger that doesn't do anything. Implements gornir.Logger interface
+type Null struct {
+}
+
+// NewNullLogger instantiates a new Null logger
+func NewNullLogger() *Null {
+	return &Null{}
+}
+
+// WithField implements gornir.Logger interface
+func (n *Null) WithField(field string, value interface{}) gornir.Logger {
+	return n
+}
+
+// Info implements gornir.Logger interface
+func (n *Null) Info(args ...interface{}) {
+}
+
+// Debug implements gornir.Logger interface
+func (n *Null) Debug(args ...interface{}) {
+}
+
+// Error implements gornir.Logger interface
+func (n *Null) Error(args ...interface{}) {
+}
+
+// Warn implements gornir.Logger interface
+func (n *Null) Warn(args ...interface{}) {
+}
+
+// Fatal implements gornir.Logger interface
+func (n *Null) Fatal(args ...interface{}) {
 }

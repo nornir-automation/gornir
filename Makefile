@@ -47,11 +47,16 @@ godoc: ## Run Go Docs in a container in port 6060
 	docker-compose run -p 6060:6060 gornir \
 		godoc -http 0.0.0.0:6060 -v
 
+.PHONY: run-example
+run-example: ## Run an example
+	docker-compose run gornir \
+		go run /go/src/github.com/nornir-automation/gornir/examples/$(EXAMPLE)/main.go
+
 .PHONY: test-example
 test-example: ## Check example output changes
 	docker-compose run gornir \
 		go run /go/src/github.com/nornir-automation/gornir/examples/$(EXAMPLE)/main.go > examples/$(EXAMPLE)/output.txt
-	# git diff --exit-code examples/$(EXAMPLE)/output.txt
+	git diff --exit-code examples/$(EXAMPLE)/output.txt
 
 .PHONY: _test-examples
 _test-examples:

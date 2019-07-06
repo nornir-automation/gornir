@@ -60,7 +60,7 @@ func TestParallel(t *testing.T) {
 			// compare with our expected value
 			got := make(map[string]bool)
 			for res := range results {
-				got[res.JobParameters().Host().Hostname] = res.Data().(*testTaskSleepResults).success
+				got[res.JobParameters().Host().Hostname] = res.Data().(testTaskSleepResults).success
 			}
 			if !cmp.Equal(got, tc.expected) {
 				t.Error(cmp.Diff(got, tc.expected))
