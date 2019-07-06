@@ -22,10 +22,12 @@ type RemoteCommandResults struct {
 	Stderr []byte // Stderr written by the command
 }
 
+// String implemente Stringer interface
 func (r RemoteCommandResults) String() string {
 	return fmt.Sprintf("  - stdout: %s\n  - stderr: %s", r.Stdout, r.Stderr)
 }
 
+// Run runs a command on a remote device via ssh
 func (r *RemoteCommand) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: host.Username,
