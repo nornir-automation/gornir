@@ -72,7 +72,7 @@ func (r *JobResult) SetData(data interface{}) {
 	r.data = data
 }
 
-// TaskWrapper is  helper function that runs an instance of a task on a given host
+// TaskWrapper is a helper function that runs an instance of a task on a given host
 func TaskWrapper(ctx context.Context, logger Logger, wg *sync.WaitGroup, taskFunc Task, host *Host, results chan *JobResult) {
 	defer wg.Done()
 	res, err := taskFunc.Run(ctx, logger, host)
