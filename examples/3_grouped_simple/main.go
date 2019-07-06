@@ -19,14 +19,17 @@ import (
 type getHostnameAndIP struct {
 }
 
+// This is going to be your task result, you can have whatever you want here
 type getHostnameAndIPResult struct {
-	SubResults []task.RemoteCommandResults
+	SubResults []task.RemoteCommandResults // Result of running various commands
 }
 
+// If you implement this method on your task result you can control the output when printing it or when using output.RenderResults
 func (r getHostnameAndIPResult) String() string {
 	return fmt.Sprintf("  - hostname: %s  - ip address: %s", r.SubResults[0].Stdout, r.SubResults[1].Stdout)
 }
 
+// Here is where you implement your logic
 func (r *getHostnameAndIP) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	// We call the first subtask and store the subresult
 	res1, err := (&task.RemoteCommand{Command: "hostname"}).Run(ctx, logger, host)
