@@ -15,7 +15,7 @@ type testTaskSleepResults struct {
 	success bool
 }
 
-func (t *testTaskSleep) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {
+func (t *testTaskSleep) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	time.Sleep(t.sleepDuration)
 	return testTaskSleepResults{success: true}, nil
 }

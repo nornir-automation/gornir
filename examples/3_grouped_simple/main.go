@@ -27,15 +27,15 @@ func (r getHostnameAndIPResult) String() string {
 	return fmt.Sprintf("  - hostname: %s  - ip address: %s", r.SubResults[0].Stdout, r.SubResults[1].Stdout)
 }
 
-func (r *getHostnameAndIP) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {
+func (r *getHostnameAndIP) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	// We call the first subtask and store the subresult
-	res1, err := (&task.RemoteCommand{Command: "hostname"}).Run(ctx, host)
+	res1, err := (&task.RemoteCommand{Command: "hostname"}).Run(ctx, logger, host)
 	if err != nil {
 		return getHostnameAndIPResult{}, err
 	}
 
 	// We call the second subtask and store the subresult
-	res2, err := (&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"}).Run(ctx, host)
+	res2, err := (&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"}).Run(ctx, logger, host)
 	if err != nil {
 		return getHostnameAndIPResult{}, err
 	}
@@ -61,11 +61,10 @@ func main() {
 	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
 	results, err := gr.RunSync(
-		"Let's run a couple of commands",
 		&getHostnameAndIP{},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	output.RenderResults(os.Stdout, results, true)
+	output.RenderResults(os.Stdout, results, "Let's run a couple of commands", true)
 }

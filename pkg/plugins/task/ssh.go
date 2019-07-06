@@ -26,7 +26,7 @@ func (r RemoteCommandResults) String() string {
 	return fmt.Sprintf("  - stdout: %s\n  - stderr: %s", r.Stdout, r.Stderr)
 }
 
-func (r *RemoteCommand) Run(ctx context.Context, host *gornir.Host) (interface{}, error) {
+func (r *RemoteCommand) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: host.Username,
 		Auth: []ssh.AuthMethod{

@@ -64,7 +64,7 @@ func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color
 		default:
 			colorFunc = green
 		}
-		if _, err := wr.Write([]byte(colorFunc(fmt.Sprintf("@ %s\n", result.JobParameters().Host().Hostname), color))); err != nil {
+		if _, err := wr.Write([]byte(colorFunc(fmt.Sprintf("@ %s\n", result.Host().Hostname), color))); err != nil {
 			return err
 		}
 	}
@@ -110,10 +110,10 @@ func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color
 //
 //      * Stderr:
 //       - err: <nil>
-func RenderResults(wr io.Writer, results chan *gornir.JobResult, color bool) error {
+func RenderResults(wr io.Writer, results chan *gornir.JobResult, title string, color bool) error {
 	r := <-results
 
-	title := blue(fmt.Sprintf("# %s\n", r.JobParameters().Title()), color)
+	title = blue(fmt.Sprintf("# %s\n", title), color)
 	if _, err := wr.Write([]byte(title)); err != nil {
 		return err
 	}

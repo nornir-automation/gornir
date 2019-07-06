@@ -19,8 +19,8 @@ func Sorted() *SortedRunner {
 }
 
 // Run implements the Run method of the gornir.Runner interface
-func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[string]*gornir.Host, jp *gornir.JobParameters, results chan *gornir.JobResult) error {
-	logger := jp.Logger().WithField("runner", "Sorted")
+func (r SortedRunner) Run(ctx context.Context, logger gornir.Logger, task gornir.Task, hosts map[string]*gornir.Host, results chan *gornir.JobResult) error {
+	logger = logger.WithField("runner", "Sorted")
 	logger.Debug("starting runner")
 
 	if len(hosts) == 0 {
@@ -41,7 +41,7 @@ func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[strin
 	for _, hostname := range sortedHostnames {
 		host := hosts[hostname]
 		logger.WithField("host", hostname).Debug("calling function")
-		gornir.TaskWrapper(ctx, wg, task, jp.ForHost(host), results)
+		gornir.TaskWrapper(ctx, logger.WithField("host", hostname), wg, task, host, results)
 	}
 	return nil
 }

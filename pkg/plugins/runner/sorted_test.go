@@ -41,9 +41,9 @@ func TestSorted(t *testing.T) {
 			rnr := runner.Sorted()
 			if err := rnr.Run(
 				context.Background(),
+				NewNullLogger(),
 				&testTaskSleep{sleepDuration: tc.sleepDuration},
 				testHosts,
-				gornir.NewJobParameters("test", NewNullLogger()),
 				results,
 			); err != nil {
 				t.Fatal(err)
@@ -58,7 +58,7 @@ func TestSorted(t *testing.T) {
 			got := make([]string, len(testHosts))
 			i := 0
 			for res := range results {
-				got[i] = res.JobParameters().Host().Hostname
+				got[i] = res.Host().Hostname
 				i++
 			}
 			if !cmp.Equal(got, tc.expected) {

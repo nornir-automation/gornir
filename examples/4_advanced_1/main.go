@@ -36,7 +36,6 @@ func main() {
 	// Gornir.RunAsync doesn't block so it's up to the user to check the runner is done
 	err = gr.RunAsync(
 		context.Background(),
-		"What's my hostname?",
 		&task.RemoteCommand{Command: "hostname"},
 		results,
 	)
@@ -48,5 +47,5 @@ func main() {
 	rnr.Wait()
 
 	close(results) // we need to close the channel or output.RenderResults will not finish
-	output.RenderResults(os.Stdout, results, true)
+	output.RenderResults(os.Stdout, results, "What's my hostname?", true)
 }
