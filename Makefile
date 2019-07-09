@@ -38,7 +38,7 @@ stop-dev-env: ## Bring down the development enviroment
 	docker-compose down
 
 .PHONY: example
-example: ## Run a given example
+example: ## Run a given example. You need to pass env variable EXAMPLE, i.e., `make example EXAMPLE=1_simple`
 	docker-compose run gornir \
 		go run /go/src/github.com/nornir-automation/gornir/examples/$(EXAMPLE)/main.go
 
@@ -48,7 +48,7 @@ godoc: ## Run Go Docs in a container in port 6060
 		godoc -http 0.0.0.0:6060 -v
 
 .PHONY: test-example
-test-example: ## Check example output changes
+test-example: ## Check example output changes. You need to pass env variable EXAMPLE, i.e., `make example EXAMPLE=1_simple`
 	docker-compose run gornir \
 		go run /go/src/github.com/nornir-automation/gornir/examples/$(EXAMPLE)/main.go > examples/$(EXAMPLE)/output.txt
 	git diff --exit-code examples/$(EXAMPLE)/output.txt
@@ -65,7 +65,7 @@ _test-examples:
 	make test-example EXAMPLE=5_advanced_2 || make test-example EXAMPLE=5_advanced_2
 
 .PHONY: test-examples
-test-examples: start-dev-env _test-examples stop-dev-env
+test-examples: start-dev-env _test-examples stop-dev-env ## Test all the examples
 
 .PHONY: help
 help:

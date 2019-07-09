@@ -36,12 +36,11 @@ func main() {
 	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
 	// above. This will narrow down the inventor to the hosts matching the filter
 	results, err := gr.Filter(filter).RunSync(
-		"What's my ip?",
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	output.RenderResults(os.Stdout, results, true)
+	output.RenderResults(os.Stdout, results, "What's my ip?", true)
 }

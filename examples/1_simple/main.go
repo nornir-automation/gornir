@@ -32,7 +32,6 @@ func main() {
 	// Said runner is going to handle the parallelization for us. Gornir.RunS is also going to block
 	// until the runner has completed executing the task over all the hosts
 	results, err := gr.RunSync(
-		"What's my ip?",
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
@@ -40,5 +39,5 @@ func main() {
 	}
 
 	// next call is going to print the result on screen
-	output.RenderResults(os.Stdout, results, true)
+	output.RenderResults(os.Stdout, results, "What's my ip?", true)
 }

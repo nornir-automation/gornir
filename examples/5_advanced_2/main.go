@@ -35,7 +35,6 @@ func main() {
 	// The following call will not block
 	err = gr.RunAsync(
 		context.Background(),
-		"What's my hostname?",
 		&task.RemoteCommand{Command: "hostname"},
 		results,
 	)
@@ -61,9 +60,9 @@ func main() {
 				return
 			}
 			if res.Err() != nil {
-				fmt.Printf("ERROR: %s: %s\n", res.JobParameters().Host().Hostname, res.Err().Error())
+				fmt.Printf("ERROR: %s: %s\n", res.Host().Hostname, res.Err().Error())
 			} else {
-				fmt.Printf("OK: %s: %s\n", res.JobParameters().Host().Hostname, res.Data().(*task.RemoteCommandResults).Stdout)
+				fmt.Printf("OK: %s: %s\n", res.Host().Hostname, res.Data().(task.RemoteCommandResults).Stdout)
 			}
 		case <-time.After(time.Second * 10):
 			return

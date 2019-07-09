@@ -2,7 +2,6 @@ package runner_test
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -16,12 +15,9 @@ type testTaskSleepResults struct {
 	success bool
 }
 
-func (t *testTaskSleep) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jr chan *gornir.JobResult) {
-	defer wg.Done()
+func (t *testTaskSleep) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	time.Sleep(t.sleepDuration)
-	result := gornir.NewJobResult(ctx, jp)
-	result.SetData(&testTaskSleepResults{success: true})
-	jr <- result
+	return testTaskSleepResults{success: true}, nil
 }
 
 // Null is a logger that doesn't do anything. Implements gornir.Logger interface

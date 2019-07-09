@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 
@@ -23,11 +22,13 @@ type RemoteCommandResults struct {
 	Stderr []byte // Stderr written by the command
 }
 
-func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jr chan *gornir.JobResult) {
-	defer wg.Done()
-	host := jp.Host()
-	result := gornir.NewJobResult(ctx, jp)
+// String implemente Stringer interface
+func (r RemoteCommandResults) String() string {
+	return fmt.Sprintf("  - stdout: %s\n  - stderr: %s", r.Stdout, r.Stderr)
+}
 
+// Run runs a command on a remote device via ssh
+func (r *RemoteCommand) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: host.Username,
 		Auth: []ssh.AuthMethod{
@@ -41,16 +42,12 @@ func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.
 	}
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Hostname, port), sshConfig)
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to dial"))
-		jr <- result
-		return
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to dial")
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to create session"))
-		jr <- result
-		return
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to create session")
 	}
 	defer session.Close()
 
@@ -60,10 +57,7 @@ func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.
 	session.Stderr = &stderr
 
 	if err := session.Run(r.Command); err != nil {
-		result.SetErr(errors.Wrap(err, "failed to execute command"))
-		jr <- result
-		return
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to execute command")
 	}
-	result.SetData(&RemoteCommandResults{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()})
-	jr <- result
+	return RemoteCommandResults{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, nil
 }

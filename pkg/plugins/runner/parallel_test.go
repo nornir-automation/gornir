@@ -44,9 +44,9 @@ func TestParallel(t *testing.T) {
 			startTime := time.Now()
 			if err := rnr.Run(
 				context.Background(),
+				NewNullLogger(),
 				&testTaskSleep{sleepDuration: tc.sleepDuration},
 				testHosts,
-				gornir.NewJobParameters("test", NewNullLogger()),
 				results,
 			); err != nil {
 				t.Fatal(err)
@@ -60,7 +60,7 @@ func TestParallel(t *testing.T) {
 			// compare with our expected value
 			got := make(map[string]bool)
 			for res := range results {
-				got[res.JobParameters().Host().Hostname] = res.Data().(*testTaskSleepResults).success
+				got[res.Host().Hostname] = res.Data().(testTaskSleepResults).success
 			}
 			if !cmp.Equal(got, tc.expected) {
 				t.Error(cmp.Diff(got, tc.expected))
@@ -71,5 +71,4 @@ func TestParallel(t *testing.T) {
 			}
 		})
 	}
-
 }
