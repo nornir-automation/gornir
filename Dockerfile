@@ -4,4 +4,4 @@ ENV GO111MODULE=on
 ENV GOPROXY=https://proxy.golang.org
 WORKDIR /go/src/github.com/nornir-automation/gornir
 ADD . .
-RUN go mod download > /dev/null
+RUN go mod download
