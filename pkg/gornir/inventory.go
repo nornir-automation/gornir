@@ -56,7 +56,7 @@ func (h *Host) SetConnection(name string, conn Connection) {
 
 func (h *Host) GetConnection(name string) (Connection, error) {
 	if h.connections == nil {
-		return nil, errors.New("there are no connection established")
+		h.connections = make(map[string]Connection)
 	}
 	if c, ok := h.connections[name]; ok {
 		return c, nil

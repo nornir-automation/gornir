@@ -3,18 +3,17 @@ package output
 import (
 	"fmt"
 	"io"
-	"reflect"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 )
 
 const (
-	redColor    = "\u001b[31m"
-	greenColor  = "\u001b[32m"
-	yellowColor = "\u001b[33m"
-	blueColor   = "\u001b[34m"
+	redColor   = "\u001b[31m"
+	greenColor = "\u001b[32m"
+	// yellowColor = "\u001b[33m"
+	blueColor = "\u001b[34m"
 	// magentaColor = "\u001b[35m"
-	cyanColor  = "\u001b[36m"
+	// cyanColor  = "\u001b[36m"
 	resetColor = "\u001b[0m"
 )
 
@@ -32,12 +31,13 @@ func green(m string, color bool) string {
 	return m
 }
 
-func yellow(m string, color bool) string {
-	if color {
-		return fmt.Sprintf("%v%v%v", yellowColor, m, resetColor)
-	}
-	return m
-}
+// func yellow(m string, color bool) string {
+//     if color {
+//         return fmt.Sprintf("%v%v%v", yellowColor, m, resetColor)
+//     }
+//     return m
+// }
+
 func blue(m string, color bool) string {
 	if color {
 		return fmt.Sprintf("%v%v%v", blueColor, m, resetColor)
@@ -48,57 +48,36 @@ func blue(m string, color bool) string {
 // func magenta(m string) string {
 //     return fmt.Sprintf("%v%v%v", magentaColor, m, resetColor)
 // }
-func cyan(m string, color bool) string {
-	if color {
-		return fmt.Sprintf("%v%v%v", cyanColor, m, resetColor)
-	}
-	return m
-}
-
-func renderInterface(wr io.Writer, i interface{}) error {
-	if i == nil {
-		return nil
-	}
-	v := reflect.Indirect(reflect.ValueOf(i))
-	for i := 0; i < v.NumField(); i++ {
-		fieldName := v.Type().Field(i).Name
-		if _, err := wr.Write([]byte(fmt.Sprintf(" * %s: %s\n", fieldName, v.Field(i)))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// func cyan(m string, color bool) string {
+//     if color {
+//         return fmt.Sprintf("%v%v%v", cyanColor, m, resetColor)
+//     }
+//     return m
+// }
 
 func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color bool) error {
 	if renderHost {
 		var colorFunc func(string, bool) string
 		switch {
-		case result.AnyErr() != nil:
+		case result.Err() != nil:
 			colorFunc = red
-		case !result.AnyChanged():
-			colorFunc = green
 		default:
-			colorFunc = yellow
+			colorFunc = green
 		}
-		if _, err := wr.Write([]byte(colorFunc(fmt.Sprintf("@ %s\n", result.JobParameters().Host().Hostname), color))); err != nil {
+		if _, err := wr.Write([]byte(colorFunc(fmt.Sprintf("@ %s\n", result.Host().Hostname), color))); err != nil {
 			return err
 		}
 	}
-	if err := renderInterface(wr, result.Data()); err != nil {
-		return err
-	}
-	if _, err := wr.Write([]byte(fmt.Sprintf("  - err: %v\n\n", result.Err()))); err != nil {
-		return err
+	if result.Err() != nil {
+		if _, err := wr.Write([]byte(fmt.Sprintf("  - err: %v\n\n", result.Err()))); err != nil {
+			return err
+		}
+	} else {
+		if _, err := wr.Write([]byte(fmt.Sprintf("%s\n", result.Data()))); err != nil {
+			return err
+		}
 	}
 
-	for i, r := range result.SubResults() {
-		if _, err := wr.Write([]byte(cyan(fmt.Sprintf("**** subtask %d\n", i), color))); err != nil {
-			return err
-		}
-		if err := renderResult(wr, r, false, color); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -131,10 +110,10 @@ func renderResult(wr io.Writer, result *gornir.JobResult, renderHost bool, color
 //
 //      * Stderr:
 //       - err: <nil>
-func RenderResults(wr io.Writer, results chan *gornir.JobResult, color bool) error {
+func RenderResults(wr io.Writer, results chan *gornir.JobResult, title string, color bool) error {
 	r := <-results
 
-	title := blue(fmt.Sprintf("# %s\n", r.JobParameters().Title()), color)
+	title = blue(fmt.Sprintf("# %s\n", title), color)
 	if _, err := wr.Write([]byte(title)); err != nil {
 		return err
 	}

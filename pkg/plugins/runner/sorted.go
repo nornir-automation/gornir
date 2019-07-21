@@ -13,12 +13,14 @@ import (
 type SortedRunner struct {
 }
 
+// Sorted returns an instantiated SortedRunner
 func Sorted() *SortedRunner {
 	return &SortedRunner{}
 }
 
-func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[string]*gornir.Host, jp *gornir.JobParameters, results chan *gornir.JobResult) error {
-	logger := jp.Logger().WithField("runner", "Sorted")
+// Run implements the Run method of the gornir.Runner interface
+func (r SortedRunner) Run(ctx context.Context, logger gornir.Logger, task gornir.Task, hosts map[string]*gornir.Host, results chan *gornir.JobResult) error {
+	logger = logger.WithField("runner", "Sorted")
 	logger.Debug("starting runner")
 
 	if len(hosts) == 0 {
@@ -39,15 +41,17 @@ func (r SortedRunner) Run(ctx context.Context, task gornir.Task, hosts map[strin
 	for _, hostname := range sortedHostnames {
 		host := hosts[hostname]
 		logger.WithField("host", hostname).Debug("calling function")
-		task.Run(ctx, wg, jp.ForHost(host), results)
+		gornir.TaskWrapper(ctx, logger.WithField("host", hostname), wg, task, host, results)
 	}
 	return nil
 }
 
+// Wait implements the Wait method of the gornir.Runner interface
 func (r SortedRunner) Wait() error {
 	return nil
 }
 
+// Close implements the Close method of the gornir.Runner interface
 func (r SortedRunner) Close() error {
 	return nil
 }

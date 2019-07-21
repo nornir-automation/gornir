@@ -1,113 +1,49 @@
-go: finding github.com/kr/fs v0.1.0
 go: finding github.com/pkg/sftp v1.10.0
+go: finding github.com/kr/fs v0.1.0
 go: downloading github.com/pkg/sftp v1.10.0
 go: extracting github.com/pkg/sftp v1.10.0
 go: downloading github.com/kr/fs v0.1.0
 go: extracting github.com/kr/fs v0.1.0
-[34m# Connect to devices via ssh
+[34m# Connecting to devices via ssh
 [0m[32m@ dev1.group_1
-[0m  - err: <nil>
-
+[0m&{%!s(*ssh.Client=&{0xc000014380 {{0 0} 0} {{0 0} []} {0 0} map[]})}
 [32m@ dev2.group_1
-[0m  - err: <nil>
-
+[0m&{%!s(*ssh.Client=&{0xc000110380 {{0 0} 0} {{0 0} []} {0 0} map[]})}
 [32m@ dev3.group_2
-[0m  - err: <nil>
-
+[0m&{%!s(*ssh.Client=&{0xc000014700 {{0 0} 0} {{0 0} []} {0 0} map[]})}
 [32m@ dev4.group_2
-[0m  - err: <nil>
-
+[0m&{%!s(*ssh.Client=&{0xc00016c300 {{0 0} 0} {{0 0} []} {0 0} map[]})}
 [31m@ dev5.no_group
-[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [password none], no supported methods remain
 
-[34m# What's my ip?
-[0m[32m@ dev1.group_1
-[0m * Stdout: 10.21.33.101/24
-
- * Stderr: 
-  - err: <nil>
-
-[32m@ dev2.group_1
-[0m * Stdout: 10.21.33.102/24
-
- * Stderr: 
-  - err: <nil>
-
-[32m@ dev3.group_2
-[0m * Stdout: 10.21.33.103/24
-
- * Stderr: 
-  - err: <nil>
-
-[32m@ dev4.group_2
-[0m * Stdout: 10.21.33.104/24
-
- * Stderr: 
-  - err: <nil>
-
-[31m@ dev5.no_group
+[34m# What is my ip?
+[0m[31m@ dev1.group_1
 [0m  - err: failed to retrieve connection: there are no connection established
 
-[34m# What's my ip? (II)
-[0m[32m@ dev1.group_1
-[0m * Stdout: 10.21.33.101/24
-
- * Stderr: 
-  - err: <nil>
-
-[32m@ dev2.group_1
-[0m * Stdout: 10.21.33.102/24
-
- * Stderr: 
-  - err: <nil>
-
-[32m@ dev3.group_2
-[0m * Stdout: 10.21.33.103/24
-
- * Stderr: 
-  - err: <nil>
-
-[32m@ dev4.group_2
-[0m * Stdout: 10.21.33.104/24
-
- * Stderr: 
-  - err: <nil>
-
-[31m@ dev5.no_group
+[31m@ dev2.group_1
 [0m  - err: failed to retrieve connection: there are no connection established
 
-[34m# Upload File
-[0m[32m@ dev1.group_1
-[0m * Bytes: %!s(int64=326)
-  - err: <nil>
+[31m@ dev3.group_2
+[0m  - err: failed to retrieve connection: there are no connection established
 
-[32m@ dev2.group_1
-[0m * Bytes: %!s(int64=326)
-  - err: <nil>
-
-[32m@ dev3.group_2
-[0m * Bytes: %!s(int64=326)
-  - err: <nil>
-
-[32m@ dev4.group_2
-[0m * Bytes: %!s(int64=326)
-  - err: <nil>
+[31m@ dev4.group_2
+[0m  - err: failed to retrieve connection: there are no connection established
 
 [31m@ dev5.no_group
 [0m  - err: failed to retrieve connection: there are no connection established
 
 [34m# Close ssh connection
-[0m[32m@ dev1.group_1
-[0m  - err: <nil>
+[0m[31m@ dev1.group_1
+[0m  - err: failed to retrieve connection: there are no connection established
 
-[32m@ dev2.group_1
-[0m  - err: <nil>
+[31m@ dev2.group_1
+[0m  - err: failed to retrieve connection: there are no connection established
 
-[32m@ dev3.group_2
-[0m  - err: <nil>
+[31m@ dev3.group_2
+[0m  - err: failed to retrieve connection: there are no connection established
 
-[32m@ dev4.group_2
-[0m  - err: <nil>
+[31m@ dev4.group_2
+[0m  - err: failed to retrieve connection: there are no connection established
 
 [31m@ dev5.no_group
 [0m  - err: failed to retrieve connection: there are no connection established

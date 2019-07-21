@@ -2,9 +2,9 @@ package task
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
-	"sync"
 
 	"github.com/pkg/sftp"
 
@@ -23,48 +23,38 @@ type SFTPUploadResult struct {
 	Bytes int64
 }
 
-func (s *SFTPUpload) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jobResult chan *gornir.JobResult) {
-	defer wg.Done()
-	host := jp.Host()
-	result := gornir.NewJobResult(ctx, jp)
+// String implemente Stringer interface
+func (s SFTPUploadResult) String() string {
+	return fmt.Sprintf("  - uploaded: %d bytes", s.Bytes)
+}
 
+func (s *SFTPUpload) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	conn, err := host.GetConnection("ssh")
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to retrieve connection"))
-		jobResult <- result
-		return
+		return &SFTPUploadResult{}, errors.Wrap(err, "failed to retrieve connection")
 	}
 	sshConn := conn.(*connection.SSH)
 
 	client, err := sftp.NewClient(sshConn.Client)
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to create sftp client"))
-		jobResult <- result
-		return
+		return &SFTPUploadResult{}, errors.Wrap(err, "failed to create sftp client")
 	}
 	defer client.Close()
 
 	dstFile, err := client.Create(s.Dst)
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to create destination file"))
-		jobResult <- result
-		return
+		return &SFTPUploadResult{}, errors.Wrap(err, "failed to create destination file")
 	}
 	defer dstFile.Close()
 
 	srcFile, err := os.Open(s.Src)
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to open source file"))
-		jobResult <- result
-		return
+		return &SFTPUploadResult{}, errors.Wrap(err, "failed to open source file")
 	}
 
 	bytes, err := io.Copy(dstFile, srcFile)
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "problem uploading file"))
-		jobResult <- result
-		return
+		return &SFTPUploadResult{}, errors.Wrap(err, "problem uploading file")
 	}
-	result.SetData(SFTPUploadResult{bytes})
-	jobResult <- result
+	return SFTPUploadResult{bytes}, nil
 }

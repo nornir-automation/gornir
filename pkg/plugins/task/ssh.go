@@ -3,7 +3,7 @@ package task
 import (
 	"bytes"
 	"context"
-	"sync"
+	"fmt"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	"github.com/nornir-automation/gornir/pkg/plugins/connection"
@@ -22,24 +22,22 @@ type RemoteCommandResults struct {
 	Stderr []byte // Stderr written by the command
 }
 
-func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.JobParameters, jobResult chan *gornir.JobResult) {
-	defer wg.Done()
-	host := jp.Host()
-	result := gornir.NewJobResult(ctx, jp)
+// String implemente Stringer interface
+func (r RemoteCommandResults) String() string {
+	return fmt.Sprintf("  - stdout: %s\n  - stderr: %s", r.Stdout, r.Stderr)
+}
 
+// Run runs a command on a remote device via ssh
+func (r *RemoteCommand) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	conn, err := host.GetConnection("ssh")
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to retrieve connection"))
-		jobResult <- result
-		return
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to retrieve connection")
 	}
 	sshConn := conn.(*connection.SSH)
 
 	session, err := sshConn.Client.NewSession()
 	if err != nil {
-		result.SetErr(errors.Wrap(err, "failed to create session"))
-		jobResult <- result
-		return
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to create session")
 	}
 
 	var stdout bytes.Buffer
@@ -48,10 +46,7 @@ func (r *RemoteCommand) Run(ctx context.Context, wg *sync.WaitGroup, jp *gornir.
 	session.Stderr = &stderr
 
 	if err := session.Run(r.Command); err != nil {
-		result.SetErr(errors.Wrap(err, "failed to execute command"))
-		jobResult <- result
-		return
+		return RemoteCommandResults{}, errors.Wrap(err, "failed to execute command")
 	}
-	result.SetData(&RemoteCommandResults{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()})
-	jobResult <- result
+	return RemoteCommandResults{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, nil
 }
