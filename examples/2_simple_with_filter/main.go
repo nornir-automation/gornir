@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	"github.com/nornir-automation/gornir/pkg/plugins/connection"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
@@ -33,9 +34,32 @@ func main() {
 
 	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
-	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
-	// above. This will narrow down the inventor to the hosts matching the filter
-	results, err := gr.Filter(filter).RunSync(
+	// Before calling any method we created a filtered version of our gr object.
+	// The original object is left unmodified. Now we can use this filtered
+	// object to execute our tasks in a subset of our devices
+	filteredGr := gr.Filter(filter)
+
+	// Open an SSH connection towards the devices
+	results, err := filteredGr.RunSync(
+		&connection.SSHOpen{},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	output.RenderResults(os.Stdout, results, "Connecting to devices via ssh", true)
+
+	// defer closing the SSH connection we just opened
+	defer func() {
+		results, err = filteredGr.RunSync(
+			&connection.SSHClose{},
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		output.RenderResults(os.Stdout, results, "Close ssh connection", true)
+	}()
+
+	results, err = filteredGr.RunSync(
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {

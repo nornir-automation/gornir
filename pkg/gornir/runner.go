@@ -28,7 +28,7 @@ type JobResult struct {
 	ctx  context.Context
 	err  error
 	host *Host
-	data interface{}
+	data TaskInstanceResult
 }
 
 // NewJobResult instantiates a new JobResult

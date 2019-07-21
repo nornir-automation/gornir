@@ -8,11 +8,64 @@ import (
 	"time"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	"github.com/nornir-automation/gornir/pkg/plugins/connection"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 	"github.com/nornir-automation/gornir/pkg/plugins/task"
 )
+
+// This is a grouped task, it will allow us to build our own task
+// leveraging other tasks
+type getHostnameAndIP struct {
+}
+
+// This is going to be your task result, you can have whatever you want here
+type getHostnameAndIPResult struct {
+	SubResults []gornir.TaskInstanceResult // Result of running various commands
+}
+
+func (r getHostnameAndIPResult) String() string {
+	res := ""
+	for _, r := range r.SubResults {
+		res += fmt.Sprintf("%s\n", r)
+	}
+	return res
+}
+
+// Here is where you implement your logic
+func (r *getHostnameAndIP) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+	resOpen, err := (&connection.SSHOpen{}).Run(ctx, logger, host)
+	if err != nil {
+		return getHostnameAndIPResult{}, err
+	}
+
+	// We call the first subtask and store the subresult
+	res1, err := (&task.RemoteCommand{Command: "hostname"}).Run(ctx, logger, host)
+	if err != nil {
+		return getHostnameAndIPResult{}, err
+	}
+
+	// We call the second subtask and store the subresult
+	res2, err := (&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"}).Run(ctx, logger, host)
+	if err != nil {
+		return getHostnameAndIPResult{}, err
+	}
+
+	resClose, err := (&connection.SSHClose{}).Run(ctx, logger, host)
+	if err != nil {
+		return getHostnameAndIPResult{}, err
+	}
+
+	return getHostnameAndIPResult{
+		SubResults: []gornir.TaskInstanceResult{
+			resOpen,
+			res1,
+			res2,
+			resClose,
+		},
+	}, nil
+}
 
 func main() {
 	// Instantiate a logger plugin
@@ -35,7 +88,7 @@ func main() {
 	// The following call will not block
 	err = gr.RunAsync(
 		context.Background(),
-		&task.RemoteCommand{Command: "hostname"},
+		&getHostnameAndIP{},
 		results,
 	)
 	if err != nil {
@@ -62,7 +115,7 @@ func main() {
 			if res.Err() != nil {
 				fmt.Printf("ERROR: %s: %s\n", res.Host().Hostname, res.Err().Error())
 			} else {
-				fmt.Printf("OK: %s: %s\n", res.Host().Hostname, res.Data().(task.RemoteCommandResults).Stdout)
+				fmt.Printf("OK: %s:\n%s\n", res.Host().Hostname, res.Data().(gornir.TaskInstanceResult))
 			}
 		case <-time.After(time.Second * 10):
 			return
