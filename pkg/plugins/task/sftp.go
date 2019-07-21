@@ -14,13 +14,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+// SFTPUpload will open a new SFTP session on an already opened ssh and upload a file
 type SFTPUpload struct {
 	Src string
 	Dst string
 }
 
+// SFTPUploadResult is the result of calling SFTPUpload
 type SFTPUploadResult struct {
-	Bytes int64
+	Bytes int64 // Bytes written
 }
 
 // String implemente Stringer interface
@@ -28,6 +30,7 @@ func (s SFTPUploadResult) String() string {
 	return fmt.Sprintf("  - uploaded: %d bytes", s.Bytes)
 }
 
+// Run implements will upload a file via sftp
 func (s *SFTPUpload) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	conn, err := host.GetConnection("ssh")
 	if err != nil {

@@ -52,6 +52,7 @@ func main() {
 		output.RenderResults(os.Stdout, results, "Close ssh connection", true)
 	}()
 
+	// We need a channel to store the results
 	res := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
 	// Gornir.RunAsync doesn't block so it's up to the user to check the runner is done

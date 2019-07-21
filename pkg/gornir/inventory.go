@@ -47,6 +47,7 @@ func (h *Host) Err() error {
 	return h.err
 }
 
+// SetConnections stores a connection
 func (h *Host) SetConnection(name string, conn Connection) {
 	if h.connections == nil {
 		h.connections = make(map[string]Connection)
@@ -54,6 +55,7 @@ func (h *Host) SetConnection(name string, conn Connection) {
 	h.connections[name] = conn
 }
 
+// GetConnection retrieves a connection that was previously set
 func (h *Host) GetConnection(name string) (Connection, error) {
 	if h.connections == nil {
 		h.connections = make(map[string]Connection)

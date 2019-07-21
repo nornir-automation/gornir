@@ -25,6 +25,7 @@ type getHostnameAndIPResult struct {
 	SubResults []gornir.TaskInstanceResult // Result of running various commands
 }
 
+// String implements fmt.Stringer interface. This basically allows us to control the output when printing the object
 func (r getHostnameAndIPResult) String() string {
 	res := ""
 	for _, r := range r.SubResults {
@@ -83,6 +84,7 @@ func main() {
 
 	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
+	// We need a channel to store the results
 	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
 	// The following call will not block

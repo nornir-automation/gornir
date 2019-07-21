@@ -61,7 +61,7 @@ func main() {
 	// next call is going to print the result on screen
 	output.RenderResults(os.Stdout, results, "What is my ip?", true)
 
-	// Now we upload a file. This shows how ssh connection is shared across tasks and even plugins
+	// Now we upload a file. This shows how the ssh connection is shared across tasks of same or different type
 	results, err = gr.RunSync(
 		&task.SFTPUpload{Src: "/etc/hosts", Dst: "/tmp/asd"},
 	)

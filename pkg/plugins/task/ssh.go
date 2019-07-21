@@ -11,12 +11,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// RemoteCommand will connect to the Host via ssh and execute the given command
+// RemoteCommand will open a new Session on an already opened ssh connection and execute the given command
 type RemoteCommand struct {
 	Command string // Command to execute
 }
 
-// RemoteCommandResults will be accessible via JobResult.Data()
+// RemoteCommandResults is the result of calling RemoteCommand
 type RemoteCommandResults struct {
 	Stdout []byte // Stdout written by the command
 	Stderr []byte // Stderr written by the command

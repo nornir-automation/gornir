@@ -84,6 +84,9 @@ func main() {
 		output.RenderResults(os.Stdout, results, "Close ssh connection", true)
 	}()
 
+	// Now we call our "grouped task", which is just a task that uses other tasks
+	// In this example we are managing the connection outside the grouped task
+	// but we could easily move that inside the grouped task
 	results, err = gr.RunSync(
 		&getHostnameAndIP{},
 	)
