@@ -1,4 +1,16 @@
-[34m# What's my ip?
+[34m# Connecting to devices via ssh
+[0m[32m@ dev1.group_1
+[0m  - connection opened
+[32m@ dev2.group_1
+[0m  - connection opened
+[32m@ dev3.group_2
+[0m  - connection opened
+[32m@ dev4.group_2
+[0m  - connection opened
+[31m@ dev5.no_group
+[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+
+[34m# What is my ip?
 [0m[32m@ dev1.group_1
 [0m  - stdout: 10.21.33.101/24
 
@@ -16,5 +28,29 @@
 
   - stderr: 
 [31m@ dev5.no_group
-[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+[0m  - err: failed to retrieve connection: couldn't find connection
+
+[34m# Upload File
+[0m[32m@ dev1.group_1
+[0m  - uploaded: 326 bytes
+[32m@ dev2.group_1
+[0m  - uploaded: 326 bytes
+[32m@ dev3.group_2
+[0m  - uploaded: 326 bytes
+[32m@ dev4.group_2
+[0m  - uploaded: 326 bytes
+[31m@ dev5.no_group
+[0m  - err: failed to retrieve connection: couldn't find connection
+
+[34m# Close ssh connection
+[0m[32m@ dev1.group_1
+[0m  - connection closed
+[32m@ dev2.group_1
+[0m  - connection closed
+[32m@ dev3.group_2
+[0m  - connection closed
+[32m@ dev4.group_2
+[0m  - connection closed
+[31m@ dev5.no_group
+[0m  - err: failed to retrieve connection: couldn't find connection
 

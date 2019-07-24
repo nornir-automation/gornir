@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	"github.com/nornir-automation/gornir/pkg/plugins/connection"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
@@ -31,13 +32,34 @@ func main() {
 
 	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
-	results := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
+	// Open an SSH connection towards the devices
+	results, err := gr.RunSync(
+		&connection.SSHOpen{},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	output.RenderResults(os.Stdout, results, "Connecting to devices via ssh", true)
+
+	// defer closing the SSH connection we just opened
+	defer func() {
+		results, err = gr.RunSync(
+			&connection.SSHClose{},
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		output.RenderResults(os.Stdout, results, "Close ssh connection", true)
+	}()
+
+	// We need a channel to store the results
+	res := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
 
 	// Gornir.RunAsync doesn't block so it's up to the user to check the runner is done
 	err = gr.RunAsync(
 		context.Background(),
 		&task.RemoteCommand{Command: "hostname"},
-		results,
+		res,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -46,6 +68,6 @@ func main() {
 	// Next call will block until the runner is done
 	rnr.Wait()
 
-	close(results) // we need to close the channel or output.RenderResults will not finish
-	output.RenderResults(os.Stdout, results, "What's my hostname?", true)
+	close(res) // we need to close the channel or output.RenderResults will not finish
+	output.RenderResults(os.Stdout, res, "What's my hostname?", true)
 }

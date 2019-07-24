@@ -1,13 +1,18 @@
 package gornir
 
+import (
+	"github.com/pkg/errors"
+)
+
 // Host represent a host
 type Host struct {
-	err      error
-	Port     uint8  `yaml:"port"`     // Port to connect to
-	Hostname string `yaml:"hostname"` // Hostname/FQDN/IP to connect to
-	Username string `yaml:"username"` // Username to use for authentication purposes
-	Password string `yaml:"password"` // Password to use for authentication purposes
-	Platform string `yaml:"platform"` // Platform of the device
+	err         error
+	Port        uint8  `yaml:"port"`     // Port to connect to
+	Hostname    string `yaml:"hostname"` // Hostname/FQDN/IP to connect to
+	Username    string `yaml:"username"` // Username to use for authentication purposes
+	Password    string `yaml:"password"` // Password to use for authentication purposes
+	Platform    string `yaml:"platform"` // Platform of the device
+	connections map[string]Connection
 }
 
 // Inventory represents a collection of Hosts
@@ -40,4 +45,23 @@ func (h *Host) SetErr(err error) {
 // Err returns the stored error
 func (h *Host) Err() error {
 	return h.err
+}
+
+// SetConnections stores a connection
+func (h *Host) SetConnection(name string, conn Connection) {
+	if h.connections == nil {
+		h.connections = make(map[string]Connection)
+	}
+	h.connections[name] = conn
+}
+
+// GetConnection retrieves a connection that was previously set
+func (h *Host) GetConnection(name string) (Connection, error) {
+	if h.connections == nil {
+		h.connections = make(map[string]Connection)
+	}
+	if c, ok := h.connections[name]; ok {
+		return c, nil
+	}
+	return nil, errors.New("couldn't find connection")
 }

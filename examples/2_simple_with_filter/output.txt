@@ -1,3 +1,8 @@
+[34m# Connecting to devices via ssh
+[0m[32m@ dev1.group_1
+[0m  - connection opened
+[32m@ dev4.group_2
+[0m  - connection opened
 [34m# What's my ip?
 [0m[32m@ dev1.group_1
 [0m  - stdout: 10.21.33.101/24
@@ -7,3 +12,8 @@
 [0m  - stdout: 10.21.33.104/24
 
   - stderr: 
+[34m# Close ssh connection
+[0m[32m@ dev1.group_1
+[0m  - connection closed
+[32m@ dev4.group_2
+[0m  - connection closed

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
+	"github.com/nornir-automation/gornir/pkg/plugins/connection"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
@@ -63,7 +64,30 @@ func main() {
 
 	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
+	// Open an SSH connection towards the devices
 	results, err := gr.RunSync(
+		&connection.SSHOpen{},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	output.RenderResults(os.Stdout, results, "Connecting to devices via ssh", true)
+
+	// defer closing the SSH connection we just opened
+	defer func() {
+		results, err = gr.RunSync(
+			&connection.SSHClose{},
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		output.RenderResults(os.Stdout, results, "Close ssh connection", true)
+	}()
+
+	// Now we call our "grouped task", which is just a task that uses other tasks
+	// In this example we are managing the connection outside the grouped task
+	// but we could easily move that inside the grouped task
+	results, err = gr.RunSync(
 		&getHostnameAndIP{},
 	)
 	if err != nil {
