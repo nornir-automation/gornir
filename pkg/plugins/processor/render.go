@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"reflect"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 )
@@ -70,8 +71,16 @@ func Render(wr io.Writer, color bool) *render {
 }
 
 func (r *render) TaskStart(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
-	fmt.Println(blue("Starting Task", r.color))
-	return nil
+	var taskName string
+
+	if t := reflect.TypeOf(task); t.Kind() == reflect.Ptr {
+		taskName = t.Elem().Name()
+	} else {
+		taskName = t.Name()
+	}
+
+	_, err := r.wr.Write([]byte(blue(fmt.Sprintf("# %s\n", taskName), r.color)))
+	return err
 }
 
 func (r *render) TaskCompleted(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
