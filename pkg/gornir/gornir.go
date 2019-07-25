@@ -17,6 +17,7 @@ type Gornir struct {
 	Logger     Logger     // Logger for the object
 	Runner     Runner     // Runner that will be used to run the task
 	Processors Processors // Processors to be used during the execution
+	uuid       string     // uuid is a unique identifier used across the logs to match events
 }
 
 // New is a Gornir constructor. It is currently no different that new,
@@ -81,10 +82,26 @@ func (gr *Gornir) WithProcessor(p Processor) *Gornir {
 	return c
 }
 
+// WithUUID returns a clone of the current Gornir but with the given UUID set. If not
+// specifically set gornir will generate one dynamically on each Run
+func (gr *Gornir) WithUUID(u string) *Gornir {
+	c := gr.Clone()
+	c.uuid = u
+	return c
+}
+
+// UUID returns either the user defined uuid (if set) or a randomized one
+func (gr *Gornir) UUID() string {
+	if gr.uuid == "" {
+		return uuid.New().String()
+	}
+	return gr.uuid
+}
+
 // RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
 func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
-	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
+	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getFunctionName(task))
 
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
 	defer close(results)
@@ -127,7 +144,7 @@ func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
 // This function doesn't block, the user can use the method Runnner.Wait instead.
 // It's also up to the user to ennsure the channel is closed and that Processors.TaskCompleted is called
 func (gr *Gornir) RunAsync(ctx context.Context, task Task, results chan *JobResult) error {
-	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
+	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getFunctionName(task))
 
 	if err := gr.Processors.TaskStart(ctx, logger, task); err != nil {
 		err = errors.Wrap(err, "problem running TaskStart")
