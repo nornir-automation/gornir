@@ -8,7 +8,7 @@ import (
 	"github.com/nornir-automation/gornir/pkg/plugins/connection"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
-	"github.com/nornir-automation/gornir/pkg/plugins/output"
+	"github.com/nornir-automation/gornir/pkg/plugins/processor"
 	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 	"github.com/nornir-automation/gornir/pkg/plugins/task"
 )
@@ -27,46 +27,41 @@ func main() {
 
 	rnr := runner.Sorted()
 
-	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr).WithProcessor(processor.Render(os.Stdout, true))
 
 	// Open an SSH connection towards the devices
-	results, err := gr.RunSync(
+	_, err = gr.RunSync(
 		&connection.SSHOpen{},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	output.RenderResults(os.Stdout, results, "Connecting to devices via ssh", true)
 
 	// defer closing the SSH connection we just opened
 	defer func() {
-		results, err = gr.RunSync(
+		_, err = gr.RunSync(
 			&connection.SSHClose{},
 		)
 		if err != nil {
 			log.Fatal(err)
 		}
-		output.RenderResults(os.Stdout, results, "Close ssh connection", true)
 	}()
 
 	// Following call is going to execute the task over all the hosts using the runner.Parallel runner.
 	// Said runner is going to handle the parallelization for us. Gornir.RunS is also going to block
 	// until the runner has completed executing the task over all the hosts
-	results, err = gr.RunSync(
+	_, err = gr.RunSync(
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// next call is going to print the result on screen
-	output.RenderResults(os.Stdout, results, "What is my ip?", true)
 
 	// Now we upload a file. This shows how the ssh connection is shared across tasks of same or different type
-	results, err = gr.RunSync(
+	_, err = gr.RunSync(
 		&task.SFTPUpload{Src: "/etc/hosts", Dst: "/tmp/asd"},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	output.RenderResults(os.Stdout, results, "Upload File", true)
 }
