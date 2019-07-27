@@ -30,7 +30,6 @@
 // 		gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(runner.Parallel())
 //
 // 		results, err := gr.RunSync(
-// 			"What's my ip?",
 // 			&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 // 		)
 // 		if err != nil {
