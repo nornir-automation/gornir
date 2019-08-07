@@ -5,7 +5,6 @@ package gornir
 import (
 	"context"
 	"reflect"
-	"runtime"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -101,7 +100,7 @@ func (gr *Gornir) UUID() string {
 // RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
 func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
-	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getFunctionName(task))
+	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
 
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
 	defer close(results)
@@ -144,7 +143,7 @@ func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
 // This function doesn't block, the user can use the method Runnner.Wait instead.
 // It's also up to the user to ennsure the channel is closed and that Processors.TaskCompleted is called
 func (gr *Gornir) RunAsync(ctx context.Context, task Task, results chan *JobResult) error {
-	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getFunctionName(task))
+	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
 
 	if err := gr.Processors.TaskStart(ctx, logger, task); err != nil {
 		err = errors.Wrap(err, "problem running TaskStart")
@@ -175,6 +174,10 @@ func (gr *Gornir) RunAsync(ctx context.Context, task Task, results chan *JobResu
 	return nil
 }
 
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+func getTaskName(i interface{}) string {
+	t := reflect.TypeOf(i)
+	if t.Kind() == reflect.Ptr {
+		return t.Elem().Name()
+	}
+	return t.Name()
 }
