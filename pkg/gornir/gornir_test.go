@@ -115,6 +115,8 @@ func TestContextCancel(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
-	_, err := gr.RunSync(ctx, &slowTask{})
+	res, err := gr.RunSync(ctx, &slowTask{})
+	r := <-res
+	fmt.Println(r.Err())
 	fmt.Println(err)
 }

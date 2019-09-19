@@ -111,48 +111,32 @@ func (gr *Gornir) RunSync(ctx context.Context, task Task) (chan *JobResult, erro
 		return results, err
 	}
 
-	done := make(chan struct{})
-	errc := make(chan error)
-	go func() {
-		defer close(done)
-		defer close(errc)
-		err := gr.Runner.Run(
-			ctx,
-			logger,
-			gr.Processors,
-			task,
-			gr.Inventory.Hosts,
-			results,
-		)
-		if err != nil {
-			err = errors.Wrap(err, "problem calling runner")
-			logger.Error(err.Error())
-			errc <- err
-			return
-		}
-		if err := gr.Runner.Wait(); err != nil {
-			err = errors.Wrap(err, "problem waiting for runner")
-			logger.Error(err.Error())
-			errc <- err
-			return
-		}
-
-		if err := gr.Processors.TaskCompleted(context.Background(), logger, task); err != nil {
-			err = errors.Wrap(err, "problem running TaskCompleted")
-			logger.Error(err.Error())
-			errc <- err
-			return
-		}
-		done <- struct{}{}
-	}()
-	select {
-	case err := <-errc:
+	err := gr.Runner.Run(
+		ctx,
+		logger,
+		gr.Processors,
+		task,
+		gr.Inventory.Hosts,
+		results,
+	)
+	if err != nil {
+		err = errors.Wrap(err, "problem calling runner")
+		logger.Error(err.Error())
 		return results, err
-	case <-ctx.Done():
-		return results, ctx.Err()
-	case <-done:
-		return results, nil
 	}
+	if err := gr.Runner.Wait(); err != nil {
+		err = errors.Wrap(err, "problem waiting for runner")
+		logger.Error(err.Error())
+		return results, err
+	}
+
+	if err := gr.Processors.TaskCompleted(context.Background(), logger, task); err != nil {
+		err = errors.Wrap(err, "problem running TaskCompleted")
+		logger.Error(err.Error())
+		return results, err
+	}
+
+	return results, nil
 }
 
 // RunAsync will execute the task over the hosts in the inventory using the given runner.
