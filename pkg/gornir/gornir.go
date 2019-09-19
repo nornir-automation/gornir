@@ -99,7 +99,7 @@ func (gr *Gornir) UUID() string {
 
 // RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
-func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
+func (gr *Gornir) RunSync(ctx context.Context, task Task) (chan *JobResult, error) {
 	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
 
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
@@ -111,32 +111,48 @@ func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
 		return results, err
 	}
 
-	err := gr.Runner.Run(
-		context.Background(),
-		logger,
-		gr.Processors,
-		task,
-		gr.Inventory.Hosts,
-		results,
-	)
-	if err != nil {
-		err = errors.Wrap(err, "problem calling runner")
-		logger.Error(err.Error())
-		return results, err
-	}
-	if err := gr.Runner.Wait(); err != nil {
-		err = errors.Wrap(err, "problem waiting for runner")
-		logger.Error(err.Error())
-		return results, err
-	}
+	done := make(chan struct{})
+	errc := make(chan error)
+	go func() {
+		defer close(done)
+		defer close(errc)
+		err := gr.Runner.Run(
+			ctx,
+			logger,
+			gr.Processors,
+			task,
+			gr.Inventory.Hosts,
+			results,
+		)
+		if err != nil {
+			err = errors.Wrap(err, "problem calling runner")
+			logger.Error(err.Error())
+			errc <- err
+			return
+		}
+		if err := gr.Runner.Wait(); err != nil {
+			err = errors.Wrap(err, "problem waiting for runner")
+			logger.Error(err.Error())
+			errc <- err
+			return
+		}
 
-	if err := gr.Processors.TaskCompleted(context.Background(), logger, task); err != nil {
-		err = errors.Wrap(err, "problem running TaskCompleted")
-		logger.Error(err.Error())
+		if err := gr.Processors.TaskCompleted(context.Background(), logger, task); err != nil {
+			err = errors.Wrap(err, "problem running TaskCompleted")
+			logger.Error(err.Error())
+			errc <- err
+			return
+		}
+		done <- struct{}{}
+	}()
+	select {
+	case err := <-errc:
 		return results, err
+	case <-ctx.Done():
+		return results, ctx.Err()
+	case <-done:
+		return results, nil
 	}
-
-	return results, nil
 }
 
 // RunAsync will execute the task over the hosts in the inventory using the given runner.

@@ -34,6 +34,7 @@ func main() {
 
 	// Open an SSH connection towards the devices
 	results, err := gr.RunSync(
+		context.Background(),
 		&connection.SSHOpen{},
 	)
 	if err != nil {
@@ -44,6 +45,7 @@ func main() {
 	// defer closing the SSH connection we just opened
 	defer func() {
 		results, err = gr.RunSync(
+			context.Background(),
 			&connection.SSHClose{},
 		)
 		if err != nil {

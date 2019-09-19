@@ -1,11 +1,15 @@
 package gornir_test
 
 import (
+	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
+	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 )
 
 var (
@@ -86,4 +90,31 @@ func TestBuild(t *testing.T) {
 			}
 		})
 	}
+}
+
+type slowTask struct {
+}
+
+type slowTaskResult struct {
+}
+
+func (t *slowTask) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+	time.Sleep(1 * time.Second)
+	return slowTaskResult{}, nil
+}
+
+func TestContextCancel(t *testing.T) {
+	inv := gornir.Inventory{
+		Hosts: map[string]*gornir.Host{
+			"host1": {},
+		},
+	}
+	log := logger.NewLogrus(false)
+	rnr := runner.Sorted()
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+	_, err := gr.RunSync(ctx, &slowTask{})
+	fmt.Println(err)
 }
