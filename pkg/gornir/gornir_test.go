@@ -99,8 +99,12 @@ type slowTaskResult struct {
 }
 
 func (t *slowTask) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
-	time.Sleep(1 * time.Second)
-	return slowTaskResult{}, nil
+	select {
+	case <-time.After(1 * time.Second):
+		return slowTaskResult{}, nil
+	case <-ctx.Done():
+		return slowTaskResult{}, ctx.Err()
+	}
 }
 
 func TestContextCancel(t *testing.T) {

@@ -83,27 +83,8 @@ func TaskWrapper(ctx context.Context, logger Logger, processors Processors, wg *
 	}
 
 	defer wg.Done()
-
-	errc := make(chan error)
-	resc := make(chan TaskInstanceResult)
-	go func() {
-		defer close(errc)
-		defer close(resc)
-
-		res, err := task.Run(ctx, logger, host)
-		host.SetErr(err)
-		resc <- res
-		errc <- err
-	}()
-
-	var res TaskInstanceResult
-	var err error
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case res = <-resc:
-		err = <-errc
-	}
+	res, err := task.Run(ctx, logger, host)
+	host.SetErr(err)
 
 	jobResult := NewJobResult(ctx, host, res, err)
 
