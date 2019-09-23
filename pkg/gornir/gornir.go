@@ -105,7 +105,7 @@ func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
 	defer close(results)
 
-	if err := gr.Processors.TaskStart(context.Background(), logger, task); err != nil {
+	if err := gr.Processors.TaskStarted(context.Background(), logger, task); err != nil {
 		err = errors.Wrap(err, "problem running TaskStart")
 		logger.Error(err.Error())
 		return results, err
@@ -145,7 +145,7 @@ func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
 func (gr *Gornir) RunAsync(ctx context.Context, task Task, results chan *JobResult) error {
 	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
 
-	if err := gr.Processors.TaskStart(ctx, logger, task); err != nil {
+	if err := gr.Processors.TaskStarted(ctx, logger, task); err != nil {
 		err = errors.Wrap(err, "problem running TaskStart")
 		logger.Error(err.Error())
 		return err

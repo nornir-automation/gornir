@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sync"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 )
@@ -12,10 +13,7 @@ import (
 const (
 	redColor   = "\u001b[31m"
 	greenColor = "\u001b[32m"
-	// yellowColor = "\u001b[33m"
-	blueColor = "\u001b[34m"
-	// magentaColor = "\u001b[35m"
-	// cyanColor  = "\u001b[36m"
+	blueColor  = "\u001b[34m"
 	resetColor = "\u001b[0m"
 )
 
@@ -33,13 +31,6 @@ func green(m string, color bool) string {
 	return m
 }
 
-// func yellow(m string, color bool) string {
-//     if color {
-//         return fmt.Sprintf("%v%v%v", yellowColor, m, resetColor)
-//     }
-//     return m
-// }
-
 func blue(m string, color bool) string {
 	if color {
 		return fmt.Sprintf("%v%v%v", blueColor, m, resetColor)
@@ -47,31 +38,24 @@ func blue(m string, color bool) string {
 	return m
 }
 
-// func magenta(m string) string {
-//     return fmt.Sprintf("%v%v%v", magentaColor, m, resetColor)
-// }
-// func cyan(m string, color bool) string {
-//     if color {
-//         return fmt.Sprintf("%v%v%v", cyanColor, m, resetColor)
-//     }
-//     return m
-// }
-
+// RenderProcessor is a processor that writes the result to an io.Writer
 type RenderProcessor struct {
-	// mux   *sync.Mutex
+	mux   *sync.Mutex
 	wr    io.Writer
 	color bool
 }
 
-// Render returns a processor that renders the output
+// Render returns a configured RenderProcessor
 func Render(wr io.Writer, color bool) *RenderProcessor {
 	return &RenderProcessor{
+		mux:   &sync.Mutex{},
 		wr:    wr,
 		color: color,
 	}
 }
 
-func (r *RenderProcessor) TaskStart(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
+// TaskStarted renders task.Metdata().Identifier or the task's struct's name
+func (r *RenderProcessor) TaskStarted(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
 	var taskName string
 
 	meta := task.Metadata()
@@ -91,15 +75,21 @@ func (r *RenderProcessor) TaskStart(ctx context.Context, logger gornir.Logger, t
 	return err
 }
 
+// TaskCompleted doesn't do anything
 func (r *RenderProcessor) TaskCompleted(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
 	return nil
 }
 
-func (r *RenderProcessor) HostStart(ctx context.Context, logger gornir.Logger, host *gornir.Host, task gornir.Task) error {
+// TaskInstanceStarted doesn't do anything
+func (r *RenderProcessor) TaskInstanceStarted(ctx context.Context, logger gornir.Logger, host *gornir.Host, task gornir.Task) error {
 	return nil
 }
 
-func (r *RenderProcessor) HostCompleted(ctx context.Context, logger gornir.Logger, jobResult *gornir.JobResult, host *gornir.Host, task gornir.Task) error {
+// TaskInstanceCompleted renders either the result or the error resulted in the execution of the TaskInstance
+func (r *RenderProcessor) TaskInstanceCompleted(ctx context.Context, logger gornir.Logger, jobResult *gornir.JobResult, host *gornir.Host, task gornir.Task) error {
+	r.mux.Lock()
+	defer r.mux.Unlock()
+
 	switch jobResult.Err() {
 	case nil:
 		if _, err := r.wr.Write([]byte(green(fmt.Sprintf("@ %s\n", host.Hostname), r.color))); err != nil {

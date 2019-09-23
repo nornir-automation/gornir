@@ -14,7 +14,9 @@ type TaskInstanceResult interface{}
 // the task is responsible to indicate its completion
 // by calling sync.WaitGroup.Done()
 type Task interface {
+	// Run method implements the business logic of the task
 	Run(context.Context, Logger, *Host) (TaskInstanceResult, error)
+	// Metadata returns some metadata information attached to the task
 	Metadata() *TaskMetadata
 }
 
@@ -82,7 +84,7 @@ func (r *JobResult) SetData(data interface{}) {
 
 // TaskWrapper is a helper function that runs an instance of a task on a given host
 func TaskWrapper(ctx context.Context, logger Logger, processors Processors, wg *sync.WaitGroup, task Task, host *Host, results chan *JobResult) error {
-	if err := processors.HostStart(ctx, logger, host, task); err != nil {
+	if err := processors.TaskInstanceStarted(ctx, logger, host, task); err != nil {
 		err = errors.Wrap(err, "problem running HostStart")
 		logger.Error(err.Error())
 		return err
@@ -94,7 +96,7 @@ func TaskWrapper(ctx context.Context, logger Logger, processors Processors, wg *
 
 	jobResult := NewJobResult(ctx, host, res, err)
 
-	if err := processors.HostCompleted(ctx, logger, jobResult, host, task); err != nil {
+	if err := processors.TaskInstanceCompleted(ctx, logger, jobResult, host, task); err != nil {
 		err = errors.Wrap(err, "problem running HostCompleted")
 		logger.Error(err.Error())
 		return err
