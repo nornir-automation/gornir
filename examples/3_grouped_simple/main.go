@@ -18,6 +18,12 @@ import (
 // This is a grouped task, it will allow us to build our own task
 // leveraging other tasks
 type getHostnameAndIP struct {
+	meta *gornir.TaskMetadata
+}
+
+// Metadata returns the task metadata
+func (t *getHostnameAndIP) Metadata() *gornir.TaskMetadata {
+	return t.meta
 }
 
 // This is going to be your task result, you can have whatever you want here
@@ -31,7 +37,7 @@ func (r getHostnameAndIPResult) String() string {
 }
 
 // Here is where you implement your logic
-func (r *getHostnameAndIP) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+func (t *getHostnameAndIP) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	// We call the first subtask and store the subresult
 	res1, err := (&task.RemoteCommand{Command: "hostname"}).Run(ctx, logger, host)
 	if err != nil {

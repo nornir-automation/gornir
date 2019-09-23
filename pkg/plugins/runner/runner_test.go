@@ -9,6 +9,11 @@ import (
 
 type testTaskSleep struct {
 	sleepDuration time.Duration
+	meta          *gornir.TaskMetadata
+}
+
+func (t *testTaskSleep) Metadata() *gornir.TaskMetadata {
+	return t.meta
 }
 
 type testTaskSleepResults struct {

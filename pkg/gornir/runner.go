@@ -15,6 +15,12 @@ type TaskInstanceResult interface{}
 // by calling sync.WaitGroup.Done()
 type Task interface {
 	Run(context.Context, Logger, *Host) (TaskInstanceResult, error)
+	Metadata() *TaskMetadata
+}
+
+// TaskMetada includes some metadata about a given task
+type TaskMetadata struct {
+	Identifier string // Identifier of the task
 }
 
 // Runner is the interface of a struct that can implement a strategy

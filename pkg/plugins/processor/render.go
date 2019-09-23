@@ -73,10 +73,17 @@ func Render(wr io.Writer, color bool) *render {
 func (r *render) TaskStart(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
 	var taskName string
 
-	if t := reflect.TypeOf(task); t.Kind() == reflect.Ptr {
-		taskName = t.Elem().Name()
-	} else {
-		taskName = t.Name()
+	meta := task.Metadata()
+	if meta != nil {
+		taskName = meta.Identifier
+	}
+
+	if taskName == "" {
+		if t := reflect.TypeOf(task); t.Kind() == reflect.Ptr {
+			taskName = t.Elem().Name()
+		} else {
+			taskName = t.Name()
+		}
 	}
 
 	_, err := r.wr.Write([]byte(blue(fmt.Sprintf("# %s\n", taskName), r.color)))
