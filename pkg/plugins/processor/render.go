@@ -57,20 +57,21 @@ func blue(m string, color bool) string {
 //     return m
 // }
 
-type render struct {
+type RenderProcessor struct {
+	// mux   *sync.Mutex
 	wr    io.Writer
 	color bool
 }
 
 // Render returns a processor that renders the output
-func Render(wr io.Writer, color bool) *render {
-	return &render{
+func Render(wr io.Writer, color bool) *RenderProcessor {
+	return &RenderProcessor{
 		wr:    wr,
 		color: color,
 	}
 }
 
-func (r *render) TaskStart(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
+func (r *RenderProcessor) TaskStart(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
 	var taskName string
 
 	meta := task.Metadata()
@@ -90,15 +91,15 @@ func (r *render) TaskStart(ctx context.Context, logger gornir.Logger, task gorni
 	return err
 }
 
-func (r *render) TaskCompleted(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
+func (r *RenderProcessor) TaskCompleted(ctx context.Context, logger gornir.Logger, task gornir.Task) error {
 	return nil
 }
 
-func (r *render) HostStart(ctx context.Context, logger gornir.Logger, host *gornir.Host, task gornir.Task) error {
+func (r *RenderProcessor) HostStart(ctx context.Context, logger gornir.Logger, host *gornir.Host, task gornir.Task) error {
 	return nil
 }
 
-func (r *render) HostCompleted(ctx context.Context, logger gornir.Logger, jobResult *gornir.JobResult, host *gornir.Host, task gornir.Task) error {
+func (r *RenderProcessor) HostCompleted(ctx context.Context, logger gornir.Logger, jobResult *gornir.JobResult, host *gornir.Host, task gornir.Task) error {
 	switch jobResult.Err() {
 	case nil:
 		if _, err := r.wr.Write([]byte(green(fmt.Sprintf("@ %s\n", host.Hostname), r.color))); err != nil {

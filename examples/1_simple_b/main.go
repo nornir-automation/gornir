@@ -1,4 +1,4 @@
-// this is the simplest example possible
+// this example is similar to 1_simple but it uses processors to render the result instead
 package main
 
 import (
