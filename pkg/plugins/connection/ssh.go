@@ -32,10 +32,16 @@ func (s SSH) String() string {
 
 // SSHOpen is a Connection plugin that opens a connection with a device
 type SSHOpen struct {
+	Meta *gornir.TaskMetadata // Task metadata
+}
+
+// Metadata returns the task metadata
+func (t *SSHOpen) Metadata() *gornir.TaskMetadata {
+	return t.Meta
 }
 
 // Run implements gornir.Task interface
-func (r *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+func (t *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: host.Username,
 		Auth: []ssh.AuthMethod{
@@ -57,10 +63,16 @@ func (r *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Ho
 
 // SSHClose is a Connection plugin that closes an already opened ssh connection
 type SSHClose struct {
+	Meta *gornir.TaskMetadata // Task metadata
+}
+
+// Metadata returns the task metadata
+func (t *SSHClose) Metadata() *gornir.TaskMetadata {
+	return t.Meta
 }
 
 // Run implements gornir.Task interface
-func (r *SSHClose) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+func (t *SSHClose) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	conn, err := host.GetConnection("ssh")
 	if err != nil {
 		return &SSH{}, errors.Wrap(err, "failed to retrieve connection")

@@ -58,6 +58,7 @@ _test-examples:
 	# not super proud but we run it twice because sometimes the order of the
 	# auth methods change causing the error of dev5 to be slightly different
 	make test-example EXAMPLE=1_simple || make test-example EXAMPLE=1_simple
+	make test-example EXAMPLE=1_simple_processor || make test-example EXAMPLE=1_simple_processor
 	make test-example EXAMPLE=2_simple_with_filter || make test-example EXAMPLE=2_simple_with_filter
 	make test-example EXAMPLE=2_simple_with_filter_bis || make test-example EXAMPLE=2_simple_with_filter_bis
 	make test-example EXAMPLE=3_grouped_simple || make test-example EXAMPLE=3_grouped_simple

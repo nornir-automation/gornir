@@ -1,0 +1,7 @@
+# dummyTask
+@ host1
+  - done!
+
+@ host2
+  - err: some error
+

@@ -25,6 +25,11 @@ func NewLogrus(debug bool) *Logrus {
 	return &Logrus{logger: log.NewEntry(logger)}
 }
 
+// NewLogrusFromEntry instantiates a new Logrus logger
+func NewLogrusFromEntry(entry *log.Entry) *Logrus {
+	return &Logrus{logger: entry}
+}
+
 // WithField implements gornir.Logger interface
 func (l *Logrus) WithField(field string, value interface{}) gornir.Logger {
 	return &Logrus{logger: l.logger.WithFields(log.Fields{field: value})}

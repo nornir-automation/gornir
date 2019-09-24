@@ -2,6 +2,7 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -20,7 +21,7 @@ func Parallel() *ParallelRunner {
 }
 
 // Run implements the Run method of the gornir.Runner interface
-func (r ParallelRunner) Run(ctx context.Context, logger gornir.Logger, task gornir.Task, hosts map[string]*gornir.Host, results chan *gornir.JobResult) error {
+func (r ParallelRunner) Run(ctx context.Context, logger gornir.Logger, processors gornir.Processors, task gornir.Task, hosts map[string]*gornir.Host, results chan *gornir.JobResult) error {
 	logger = logger.WithField("runner", "Parallel")
 	logger.Debug("starting runner")
 
@@ -31,8 +32,16 @@ func (r ParallelRunner) Run(ctx context.Context, logger gornir.Logger, task gorn
 	r.wg.Add(len(hosts))
 
 	for hostname, host := range hosts {
+		// We need to lock hostname and host or the closure might end up running other hosts
+		hostname := hostname
+		host := host
+
 		logger.WithField("host", hostname).Debug("calling function")
-		go gornir.TaskWrapper(ctx, logger.WithField("host", hostname), r.wg, task, host, results)
+		go func() {
+			if err := gornir.TaskWrapper(ctx, logger.WithField("host", hostname), processors, r.wg, task, host, results); err != nil {
+				logger.Error(fmt.Sprintf("problem calling TaskWrapper: %s", err))
+			}
+		}()
 	}
 	return nil
 }
