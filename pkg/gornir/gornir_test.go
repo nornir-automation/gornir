@@ -1,11 +1,14 @@
 package gornir_test
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 	"github.com/nornir-automation/gornir/pkg/plugins/inventory"
 	"github.com/nornir-automation/gornir/pkg/plugins/logger"
+	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 )
 
 var (
@@ -85,5 +88,78 @@ func TestBuild(t *testing.T) {
 					tc.name, len(original.Inventory.Hosts), olen)
 			}
 		})
+	}
+}
+
+type slowTask struct {
+}
+
+func (t *slowTask) Metadata() *gornir.TaskMetadata {
+	return nil
+}
+
+type slowTaskResult struct {
+}
+
+func (t *slowTask) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+	select {
+	case <-time.After(1 * time.Second):
+		return slowTaskResult{}, nil
+	case <-ctx.Done():
+		return slowTaskResult{}, ctx.Err()
+	}
+}
+
+func TestContextCancelSync(t *testing.T) {
+	inv := gornir.Inventory{
+		Hosts: map[string]*gornir.Host{
+			"host1": {},
+		},
+	}
+	log := logger.NewLogrus(false)
+	rnr := runner.Sorted()
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+	res, err := gr.RunSync(ctx, &slowTask{})
+	if err != nil {
+		t.Error(err)
+	}
+	r := <-res
+	if r.Err() != context.DeadlineExceeded {
+		t.Errorf("error should be 'context deadline exceeded'. Got: %s", r.Err())
+	}
+}
+
+func TestContextCancelASync(t *testing.T) {
+	inv := gornir.Inventory{
+		Hosts: map[string]*gornir.Host{
+			"host1": {},
+		},
+	}
+	log := logger.NewLogrus(false)
+	rnr := runner.Sorted()
+	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	res := make(chan *gornir.JobResult, len(gr.Inventory.Hosts))
+	defer close(res)
+
+	err := gr.RunAsync(ctx, &slowTask{}, res)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = rnr.Wait()
+	if err != nil {
+		t.Error(err)
+	}
+
+	r := <-res
+	if r.Err() != context.DeadlineExceeded {
+		t.Errorf("error should be 'context deadline exceeded'. Got: %s", r.Err())
 	}
 }

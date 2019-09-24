@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -31,6 +32,7 @@ func main() {
 
 	// Open an SSH connection towards the devices
 	_, err = gr.RunSync(
+		context.Background(),
 		&connection.SSHOpen{
 			Meta: &gornir.TaskMetadata{
 				Identifier: "Connecting to devices via ssh",
@@ -44,6 +46,7 @@ func main() {
 	// defer closing the SSH connection we just opened
 	defer func() {
 		_, err = gr.RunSync(
+			context.Background(),
 			&connection.SSHClose{
 				Meta: &gornir.TaskMetadata{
 					Identifier: "Close ssh connection",
@@ -59,6 +62,7 @@ func main() {
 	// Said runner is going to handle the parallelization for us. Gornir.RunS is also going to block
 	// until the runner has completed executing the task over all the hosts
 	_, err = gr.RunSync(
+		context.Background(),
 		&task.RemoteCommand{
 			Command: "ip addr | grep \\/24 | awk '{ print $2 }'",
 			Meta: &gornir.TaskMetadata{
@@ -72,6 +76,7 @@ func main() {
 
 	// Now we upload a file. This shows how the ssh connection is shared across tasks of same or different type
 	_, err = gr.RunSync(
+		context.Background(),
 		&task.SFTPUpload{
 			Src: "/etc/hosts",
 			Dst: "/tmp/asd",

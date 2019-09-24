@@ -103,7 +103,7 @@ func TestRender(t *testing.T) {
 			b := []byte{}
 			buf := bytes.NewBuffer(b)
 
-			_, err := gr.WithProcessor(processor.Render(buf, tc.color)).RunSync(tc.task)
+			_, err := gr.WithProcessor(processor.Render(buf, tc.color)).RunSync(context.Background(), tc.task)
 			if err != nil {
 				t.Fatal(err)
 			}
