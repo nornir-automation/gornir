@@ -71,6 +71,7 @@ func main() {
 
 	// Open an SSH connection towards the devices
 	results, err := gr.RunSync(
+		context.Background(),
 		&connection.SSHOpen{},
 	)
 	if err != nil {
@@ -81,6 +82,7 @@ func main() {
 	// defer closing the SSH connection we just opened
 	defer func() {
 		results, err = gr.RunSync(
+			context.Background(),
 			&connection.SSHClose{},
 		)
 		if err != nil {
@@ -93,6 +95,7 @@ func main() {
 	// In this example we are managing the connection outside the grouped task
 	// but we could easily move that inside the grouped task
 	results, err = gr.RunSync(
+		context.Background(),
 		&getHostnameAndIP{},
 	)
 	if err != nil {

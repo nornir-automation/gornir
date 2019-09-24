@@ -99,7 +99,8 @@ func (gr *Gornir) UUID() string {
 
 // RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
-func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
+// Note: It is up to the underlying task to check if the context is done
+func (gr *Gornir) RunSync(ctx context.Context, task Task) (chan *JobResult, error) {
 	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
 
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
@@ -112,7 +113,7 @@ func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
 	}
 
 	err := gr.Runner.Run(
-		context.Background(),
+		ctx,
 		logger,
 		gr.Processors,
 		task,
@@ -141,7 +142,8 @@ func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
 
 // RunAsync will execute the task over the hosts in the inventory using the given runner.
 // This function doesn't block, the user can use the method Runnner.Wait instead.
-// It's also up to the user to ennsure the channel is closed and that Processors.TaskCompleted is called
+// It's also up to the user to ensure the channel is closed and that Processors.TaskCompleted is called
+// Note: It is up to the underlying task to check if the context is done
 func (gr *Gornir) RunAsync(ctx context.Context, task Task, results chan *JobResult) error {
 	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
 

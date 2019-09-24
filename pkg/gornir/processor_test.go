@@ -79,7 +79,7 @@ func TestNoProcessor(t *testing.T) {
 	rnr := runner.Sorted()
 	gr := gornir.New().WithInventory(inv).WithLogger(log).WithRunner(rnr)
 
-	_, err := gr.RunSync(&dummyTask{})
+	_, err := gr.RunSync(context.Background(), &dummyTask{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +107,7 @@ func TestOneProcessor(t *testing.T) {
 		"started":         struct{}{},
 	}
 
-	_, err := gr.WithProcessors(gornir.Processors{dummy(data)}).RunSync(&dummyTask{})
+	_, err := gr.WithProcessors(gornir.Processors{dummy(data)}).RunSync(context.Background(), &dummyTask{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +140,7 @@ func TestMultipleProcessor(t *testing.T) {
 		"started":         struct{}{},
 	}
 
-	_, err := gr.WithProcessors(gornir.Processors{dummy(data1), dummy(data2)}).RunSync(&dummyTask{})
+	_, err := gr.WithProcessors(gornir.Processors{dummy(data1), dummy(data2)}).RunSync(context.Background(), &dummyTask{})
 	if err != nil {
 		t.Fatal(err)
 	}

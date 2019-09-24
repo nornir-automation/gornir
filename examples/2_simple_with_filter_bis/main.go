@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -38,6 +39,7 @@ func main() {
 
 	// Open an SSH connection towards the devices
 	results, err := filteredGr.RunSync(
+		context.Background(),
 		&connection.SSHOpen{},
 	)
 	if err != nil {
@@ -48,6 +50,7 @@ func main() {
 	// defer closing the SSH connection we just opened
 	defer func() {
 		results, err = filteredGr.RunSync(
+			context.Background(),
 			&connection.SSHClose{},
 		)
 		if err != nil {
@@ -59,7 +62,10 @@ func main() {
 	// Before calling Gornir.RunS we call Gornir.Filter and pass the function defined
 	// above. This will narrow down the inventor to the hosts matching the filter
 	results, err = filteredGr.Filter(filter).RunSync(
-		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
+		context.Background(),
+		&task.RemoteCommand{
+			Command: "ip addr | grep \\/24 | awk '{ print $2 }'",
+		},
 	)
 	if err != nil {
 		log.Fatal(err)

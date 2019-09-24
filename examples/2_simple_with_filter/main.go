@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -41,6 +42,7 @@ func main() {
 
 	// Open an SSH connection towards the devices
 	results, err := filteredGr.RunSync(
+		context.Background(),
 		&connection.SSHOpen{},
 	)
 	if err != nil {
@@ -51,6 +53,7 @@ func main() {
 	// defer closing the SSH connection we just opened
 	defer func() {
 		results, err = filteredGr.RunSync(
+			context.Background(),
 			&connection.SSHClose{},
 		)
 		if err != nil {
@@ -60,6 +63,7 @@ func main() {
 	}()
 
 	results, err = filteredGr.RunSync(
+		context.Background(),
 		&task.RemoteCommand{Command: "ip addr | grep \\/24 | awk '{ print $2 }'"},
 	)
 	if err != nil {
