@@ -7,7 +7,7 @@ import (
 // Host represent a host
 type Host struct {
 	err         error
-	Port        uint8  `yaml:"port"`     // Port to connect to
+	Port        uint16 `yaml:"port"`     // Port to connect to
 	Hostname    string `yaml:"hostname"` // Hostname/FQDN/IP to connect to
 	Username    string `yaml:"username"` // Username to use for authentication purposes
 	Password    string `yaml:"password"` // Password to use for authentication purposes
