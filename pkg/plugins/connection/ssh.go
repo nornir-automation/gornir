@@ -3,6 +3,8 @@ package connection
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"log"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 
@@ -40,13 +42,39 @@ func (t *SSHOpen) Metadata() *gornir.TaskMetadata {
 	return t.Meta
 }
 
+func configPubKey(host *gornir.Host) (*ssh.Signer, error) {
+	// var hostKey ssh.PublicKey
+	sshPrivKeyFname, ok := host.Data["ssh_private_key_file"].(string)
+	if !ok {
+		err := errors.New("'ssh_private_key_file' is null")
+		log.Printf("%v", err)
+		return nil, err
+	}
+	key, err := ioutil.ReadFile(sshPrivKeyFname)
+	if err != nil {
+		log.Printf("unable to read private key: %v", err)
+		return nil, err
+	}
+
+	// Create the Signer for this private key.
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		log.Printf("unable to parse private key: %v", err)
+		return nil, err
+	}
+	return &signer, nil
+}
+
 // Run implements gornir.Task interface
 func (t *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+	var authMethods = []ssh.AuthMethod{ssh.Password(host.Password)}
+	signer, err := configPubKey(host)
+	if err == nil {
+		authMethods = append(authMethods, ssh.PublicKeys(*signer))
+	}
 	sshConfig := &ssh.ClientConfig{
-		User: host.Username,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(host.Password),
-		},
+		User:            host.Username,
+		Auth:            authMethods,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	} // #nosec
 	port := host.Port
