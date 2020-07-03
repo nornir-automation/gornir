@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"os/user"
+	"path/filepath"
+	"strings"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
 
+	"github.com/kevinburke/ssh_config"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
@@ -42,24 +45,45 @@ func (t *SSHOpen) Metadata() *gornir.TaskMetadata {
 	return t.Meta
 }
 
-func configPubKey(host *gornir.Host) (*ssh.Signer, error) {
-	// var hostKey ssh.PublicKey
-	sshPrivKeyFname, ok := host.Data["ssh_private_key_file"].(string)
-	if !ok {
-		err := errors.New("'ssh_private_key_file' is null")
-		log.Printf("%v", err)
+type authMethodResult struct {
+	authMethods []ssh.AuthMethod
+	err         error
+}
+
+func getAuthMethods(host *gornir.Host, logger gornir.Logger) (*[]ssh.AuthMethod, error) {
+	var authMethods = []ssh.AuthMethod{ssh.Password(host.Password)}
+	// GetStrict should return a default value per `man ssh_config` if this fails, it is because we couldn't parse the config file
+	sshPrivKeyFname, err := ssh_config.GetStrict(host.Hostname, "IdentityFile")
+	if err != nil {
 		return nil, err
+	}
+	signer, err := getPubKeySigner(host, sshPrivKeyFname, logger)
+	// Drop private key auth from the list and fallback to user/pass
+	if err != nil {
+		return &authMethods, nil
+	}
+	authMethods = append(authMethods, ssh.PublicKeys(*signer))
+	return &authMethods, nil
+}
+
+func getPubKeySigner(host *gornir.Host, sshPrivKeyFname string, logger gornir.Logger) (*ssh.Signer, error) {
+	usr, _ := user.Current()
+	homeDir := usr.HomeDir
+	if sshPrivKeyFname == "~" {
+		sshPrivKeyFname = homeDir
+	} else if strings.HasPrefix(sshPrivKeyFname, "~/") {
+		sshPrivKeyFname = filepath.Join(homeDir, sshPrivKeyFname[2:])
 	}
 	key, err := ioutil.ReadFile(sshPrivKeyFname)
 	if err != nil {
-		log.Printf("unable to read private key: %v", err)
+		logger.Debug(fmt.Sprintf("unable to read private key: %v", err))
 		return nil, err
 	}
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		log.Printf("unable to parse private key: %v", err)
+		logger.Error(fmt.Sprintf("unable to parse private key: %v", err))
 		return nil, err
 	}
 	return &signer, nil
@@ -67,14 +91,13 @@ func configPubKey(host *gornir.Host) (*ssh.Signer, error) {
 
 // Run implements gornir.Task interface
 func (t *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
-	var authMethods = []ssh.AuthMethod{ssh.Password(host.Password)}
-	signer, err := configPubKey(host)
-	if err == nil {
-		authMethods = append(authMethods, ssh.PublicKeys(*signer))
+	authMethods, err := getAuthMethods(host, logger)
+	if err != nil {
+		return &SSH{}, err
 	}
 	sshConfig := &ssh.ClientConfig{
 		User:            host.Username,
-		Auth:            authMethods,
+		Auth:            *authMethods,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	} // #nosec
 	port := host.Port
