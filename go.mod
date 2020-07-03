@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/google/go-cmp v0.3.0
 	github.com/google/uuid v1.1.1
+	github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/pkg/errors v0.8.1
