@@ -57,7 +57,7 @@ func defaultSSHClientConfig(host *gornir.Host, logger gornir.Logger) (*ssh.Clien
 
 // Run implements gornir.Task interface
 func (t *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
-	var clientConfigFn ClientConfigFn = defaultSSHClientConfig
+	clientConfigFn := defaultSSHClientConfig
 	if t.ClientConfigFn != nil { // The client specified a config
 		clientConfigFn = t.ClientConfigFn
 	}

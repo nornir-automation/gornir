@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func TestTime(t *testing.T) {
+func TestSSHOpen(t *testing.T) {
 	var haveIBeenCalled bool
 	cfgfn := func(host *gornir.Host, logger gornir.Logger) (*ssh.ClientConfig, error) {
 		haveIBeenCalled = true

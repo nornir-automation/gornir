@@ -35,19 +35,6 @@ func getPubKeySigner(host *gornir.Host, sshPrivKeyFname string, logger gornir.Lo
 
 func GetSSHConfig(host *gornir.Host, logger gornir.Logger) (*ssh.ClientConfig, error) {
 	var authMethods = []ssh.AuthMethod{ssh.Password(host.Password)}
-	// Under normal circumstances, you probably want to use something like the github.com/kevinburke/ssh_config package
-	// usr, _ := user.Current()
-	// homeDir := usr.HomeDir
-	// if sshPrivKeyFname == "~" {
-	//     sshPrivKeyFname = homeDir
-	// } else if strings.HasPrefix(sshPrivKeyFname, "~/") {
-	//     sshPrivKeyFname = filepath.Join(homeDir, sshPrivKeyFname[2:])
-	// }
-	// sshPrivKeyFname, err := ssh_config.GetStrict(host.Hostname, "IdentityFile")
-	// GetStrict should return a default value per `man ssh_config` if this fails, it is because we couldn't parse the config file
-	// if err != nil {
-	// 	return nil, err
-	// }
 	sshPrivKeyFname := "/go/src/github.com/nornir-automation/gornir/examples/6_custom_ssh_config/id_rsa"
 	signer, err := getPubKeySigner(host, sshPrivKeyFname, logger)
 	if err != nil {
