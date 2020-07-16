@@ -1,3 +1,5 @@
+docker-compose run gornir \
+		go run /go/src/github.com/nornir-automation/gornir/examples/1_simple/main.go
 [34m# Connecting to devices via ssh
 [0m[32m@ dev1.group_1
 [0m  - connection opened
@@ -8,7 +10,7 @@
 [32m@ dev4.group_2
 [0m  - connection opened
 [31m@ dev5.no_group
-[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+[0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [password none], no supported methods remain
 
 [32m@ dev6.no_group
 [0m  - connection opened
