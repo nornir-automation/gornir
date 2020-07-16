@@ -64,6 +64,7 @@ _test-examples:
 	make test-example EXAMPLE=3_grouped_simple || make test-example EXAMPLE=3_grouped_simple
 	make test-example EXAMPLE=4_advanced_1 || make test-example EXAMPLE=4_advanced_1
 	make test-example EXAMPLE=5_advanced_2 || make test-example EXAMPLE=5_advanced_2
+	make test-example EXAMPLE=6_custom_ssh_config || make test-example EXAMPLE=6_custom_ssh_config
 
 .PHONY: test-examples
 test-examples: start-dev-env _test-examples stop-dev-env ## Test all the examples
