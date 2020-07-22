@@ -1,5 +1,3 @@
-docker-compose run gornir \
-		go run /go/src/github.com/nornir-automation/gornir/examples/2_simple_with_filter/main.go
 [34m# Connecting to devices via ssh
 [0m[32m@ dev1.group_1
 [0m  - connection opened

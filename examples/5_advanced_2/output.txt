@@ -1,5 +1,3 @@
-docker-compose run gornir \
-		go run /go/src/github.com/nornir-automation/gornir/examples/5_advanced_2/main.go
 OK: dev1.group_1:
   - connection opened
   - stdout: dev1.group_1
