@@ -10,6 +10,8 @@
 [31m@ dev5.no_group
 [0m  - err: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
 
+[32m@ dev6.no_group
+[0m  - connection opened
 [34m# What's my hostname?
 [0m[32m@ dev1.group_1
 [0m  - stdout: dev1.group_1
@@ -30,6 +32,10 @@
 [31m@ dev5.no_group
 [0m  - err: failed to retrieve connection: couldn't find connection
 
+[32m@ dev6.no_group
+[0m  - stdout: dev6.no_group
+
+  - stderr: 
 [34m# Close ssh connection
 [0m[32m@ dev1.group_1
 [0m  - connection closed
@@ -42,3 +48,5 @@
 [31m@ dev5.no_group
 [0m  - err: failed to retrieve connection: couldn't find connection
 
+[32m@ dev6.no_group
+[0m  - connection closed
