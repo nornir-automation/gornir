@@ -13,6 +13,7 @@ services:
             - "dev3.group_2:10.21.33.103"
             - "dev4.group_2:10.21.33.104"
             - "dev5.no_group:10.21.33.105"
+            - "dev6.no_group:10.21.33.106"
             - "httpbin:10.21.33.201"
         environment:
             - GO111MODULE=on
@@ -59,6 +60,15 @@ services:
         networks:
             net1:
                 ipv4_address: 10.21.33.105
+
+    dev6.no_group:
+        hostname: dev6.no_group
+        image: dbarroso/stupid_ssh_container
+        networks:
+            net1:
+                ipv4_address: 10.21.33.106
+        volumes:
+            - ./examples/6_custom_ssh_config/id_rsa.pub:/root/.ssh/authorized_keys:ro
 
     httpbin:
         hostname: httpbin

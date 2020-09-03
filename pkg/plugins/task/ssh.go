@@ -13,7 +13,13 @@ import (
 
 // RemoteCommand will open a new Session on an already opened ssh connection and execute the given command
 type RemoteCommand struct {
-	Command string // Command to execute
+	Command string               // Command to execute
+	Meta    *gornir.TaskMetadata // Task metadata
+}
+
+// Metadata returns the task metadata
+func (t *RemoteCommand) Metadata() *gornir.TaskMetadata {
+	return t.Meta
 }
 
 // RemoteCommandResults is the result of calling RemoteCommand
@@ -28,7 +34,7 @@ func (r RemoteCommandResults) String() string {
 }
 
 // Run runs a command on a remote device via ssh
-func (r *RemoteCommand) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+func (t *RemoteCommand) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	conn, err := host.GetConnection("ssh")
 	if err != nil {
 		return RemoteCommandResults{}, errors.Wrap(err, "failed to retrieve connection")
@@ -45,7 +51,7 @@ func (r *RemoteCommand) Run(ctx context.Context, logger gornir.Logger, host *gor
 	session.Stdout = &stdout
 	session.Stderr = &stderr
 
-	if err := session.Run(r.Command); err != nil {
+	if err := session.Run(t.Command); err != nil {
 		return RemoteCommandResults{}, errors.Wrap(err, "failed to execute command")
 	}
 	return RemoteCommandResults{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, nil

@@ -30,24 +30,46 @@ func (s SSH) String() string {
 	return "  - connection opened"
 }
 
+// ClientConfigFn is an interface that allows users to implement their own SSH auth mechanisms
+type ClientConfigFn func(*gornir.Host, gornir.Logger) (*ssh.ClientConfig, error)
+
 // SSHOpen is a Connection plugin that opens a connection with a device
 type SSHOpen struct {
+	Meta           *gornir.TaskMetadata // Task metadata
+	ClientConfigFn ClientConfigFn       // SSH client configuration
 }
 
-// Run implements gornir.Task interface
-func (r *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
-	sshConfig := &ssh.ClientConfig{
+// Metadata returns the task metadata
+func (t *SSHOpen) Metadata() *gornir.TaskMetadata {
+	return t.Meta
+}
+
+// defaultSSHClientConfig implements ClientConfigFn
+func defaultSSHClientConfig(host *gornir.Host, logger gornir.Logger) (*ssh.ClientConfig, error) {
+	return &ssh.ClientConfig{
 		User: host.Username,
 		Auth: []ssh.AuthMethod{
 			ssh.Password(host.Password),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	} // #nosec
+	}, nil // #nosec
+}
+
+// Run implements gornir.Task interface
+func (t *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+	clientConfigFn := defaultSSHClientConfig
+	if t.ClientConfigFn != nil { // The client specified a config
+		clientConfigFn = t.ClientConfigFn
+	}
+	config, err := clientConfigFn(host, logger)
+	if err != nil {
+		return &SSH{}, errors.Wrap(err, "failed to build SSH client configuration")
+	}
 	port := host.Port
 	if port == 0 {
 		port = 22
 	}
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Hostname, port), sshConfig)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Hostname, port), config)
 	if err != nil {
 		return &SSH{}, errors.Wrap(err, "failed to dial")
 	}
@@ -57,10 +79,16 @@ func (r *SSHOpen) Run(ctx context.Context, logger gornir.Logger, host *gornir.Ho
 
 // SSHClose is a Connection plugin that closes an already opened ssh connection
 type SSHClose struct {
+	Meta *gornir.TaskMetadata // Task metadata
+}
+
+// Metadata returns the task metadata
+func (t *SSHClose) Metadata() *gornir.TaskMetadata {
+	return t.Meta
 }
 
 // Run implements gornir.Task interface
-func (r *SSHClose) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+func (t *SSHClose) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	conn, err := host.GetConnection("ssh")
 	if err != nil {
 		return &SSH{}, errors.Wrap(err, "failed to retrieve connection")

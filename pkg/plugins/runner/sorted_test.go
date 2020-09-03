@@ -42,6 +42,7 @@ func TestSorted(t *testing.T) {
 			if err := rnr.Run(
 				context.Background(),
 				NewNullLogger(),
+				make(gornir.Processors, 0),
 				&testTaskSleep{sleepDuration: tc.sleepDuration},
 				testHosts,
 				results,

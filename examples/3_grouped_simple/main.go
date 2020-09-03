@@ -20,6 +20,11 @@ import (
 type getHostnameAndIP struct {
 }
 
+// Metadata returns the task metadata
+func (t *getHostnameAndIP) Metadata() *gornir.TaskMetadata {
+	return nil
+}
+
 // This is going to be your task result, you can have whatever you want here
 type getHostnameAndIPResult struct {
 	SubResults []task.RemoteCommandResults // Result of running various commands
@@ -31,7 +36,7 @@ func (r getHostnameAndIPResult) String() string {
 }
 
 // Here is where you implement your logic
-func (r *getHostnameAndIP) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+func (t *getHostnameAndIP) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	// We call the first subtask and store the subresult
 	res1, err := (&task.RemoteCommand{Command: "hostname"}).Run(ctx, logger, host)
 	if err != nil {
@@ -66,6 +71,7 @@ func main() {
 
 	// Open an SSH connection towards the devices
 	results, err := gr.RunSync(
+		context.Background(),
 		&connection.SSHOpen{},
 	)
 	if err != nil {
@@ -76,6 +82,7 @@ func main() {
 	// defer closing the SSH connection we just opened
 	defer func() {
 		results, err = gr.RunSync(
+			context.Background(),
 			&connection.SSHClose{},
 		)
 		if err != nil {
@@ -88,6 +95,7 @@ func main() {
 	// In this example we are managing the connection outside the grouped task
 	// but we could easily move that inside the grouped task
 	results, err = gr.RunSync(
+		context.Background(),
 		&getHostnameAndIP{},
 	)
 	if err != nil {

@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/nornir-automation/gornir/pkg/gornir"
@@ -12,7 +14,40 @@ import (
 	"github.com/nornir-automation/gornir/pkg/plugins/output"
 	"github.com/nornir-automation/gornir/pkg/plugins/runner"
 	"github.com/nornir-automation/gornir/pkg/plugins/task"
+	"golang.org/x/crypto/ssh"
 )
+
+func getPubKeySigner(host *gornir.Host, sshPrivKeyFname string, logger gornir.Logger) (*ssh.Signer, error) {
+	key, err := ioutil.ReadFile(sshPrivKeyFname)
+	if err != nil {
+		logger.Debug(fmt.Sprintf("unable to read private key: %v", err))
+		return nil, err
+	}
+
+	// Create the Signer for this private key.
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to parse private key: %v", err))
+		return nil, err
+	}
+	return &signer, nil
+}
+
+func GetSSHConfig(host *gornir.Host, logger gornir.Logger) (*ssh.ClientConfig, error) {
+	var authMethods = []ssh.AuthMethod{ssh.Password(host.Password)}
+	sshPrivKeyFname := "/go/src/github.com/nornir-automation/gornir/examples/6_custom_ssh_config/id_rsa"
+	signer, err := getPubKeySigner(host, sshPrivKeyFname, logger)
+	if err != nil {
+		return nil, err
+	}
+	authMethods = append(authMethods, ssh.PublicKeys(*signer))
+	sshConfig := &ssh.ClientConfig{
+		User:            host.Username,
+		Auth:            authMethods,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	} // #nosec
+	return sshConfig, nil
+}
 
 func main() {
 	// Instantiate a logger plugin
@@ -33,7 +68,7 @@ func main() {
 	// Open an SSH connection towards the devices
 	results, err := gr.RunSync(
 		context.Background(),
-		&connection.SSHOpen{},
+		&connection.SSHOpen{ClientConfigFn: GetSSHConfig},
 	)
 	if err != nil {
 		log.Fatal(err)

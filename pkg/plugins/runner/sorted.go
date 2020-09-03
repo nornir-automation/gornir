@@ -2,6 +2,7 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"sync"
 
@@ -19,7 +20,7 @@ func Sorted() *SortedRunner {
 }
 
 // Run implements the Run method of the gornir.Runner interface
-func (r SortedRunner) Run(ctx context.Context, logger gornir.Logger, task gornir.Task, hosts map[string]*gornir.Host, results chan *gornir.JobResult) error {
+func (r SortedRunner) Run(ctx context.Context, logger gornir.Logger, processors gornir.Processors, task gornir.Task, hosts map[string]*gornir.Host, results chan *gornir.JobResult) error {
 	logger = logger.WithField("runner", "Sorted")
 	logger.Debug("starting runner")
 
@@ -41,7 +42,9 @@ func (r SortedRunner) Run(ctx context.Context, logger gornir.Logger, task gornir
 	for _, hostname := range sortedHostnames {
 		host := hosts[hostname]
 		logger.WithField("host", hostname).Debug("calling function")
-		gornir.TaskWrapper(ctx, logger.WithField("host", hostname), wg, task, host, results)
+		if err := gornir.TaskWrapper(ctx, logger.WithField("host", hostname), processors, wg, task, host, results); err != nil {
+			logger.Error(fmt.Sprintf("problem calling TaskWrapper: %s", err))
+		}
 	}
 	return nil
 }

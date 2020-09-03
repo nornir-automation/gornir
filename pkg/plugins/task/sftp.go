@@ -16,8 +16,14 @@ import (
 
 // SFTPUpload will open a new SFTP session on an already opened ssh and upload a file
 type SFTPUpload struct {
-	Src string
-	Dst string
+	Src  string
+	Dst  string
+	Meta *gornir.TaskMetadata // Task metadata
+}
+
+// Metadata returns the task metadata
+func (t *SFTPUpload) Metadata() *gornir.TaskMetadata {
+	return t.Meta
 }
 
 // SFTPUploadResult is the result of calling SFTPUpload
@@ -26,12 +32,12 @@ type SFTPUploadResult struct {
 }
 
 // String implemente Stringer interface
-func (s SFTPUploadResult) String() string {
-	return fmt.Sprintf("  - uploaded: %d bytes", s.Bytes)
+func (r SFTPUploadResult) String() string {
+	return fmt.Sprintf("  - uploaded: %d bytes", r.Bytes)
 }
 
 // Run implements will upload a file via sftp
-func (s *SFTPUpload) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
+func (t *SFTPUpload) Run(ctx context.Context, logger gornir.Logger, host *gornir.Host) (gornir.TaskInstanceResult, error) {
 	conn, err := host.GetConnection("ssh")
 	if err != nil {
 		return &SFTPUploadResult{}, errors.Wrap(err, "failed to retrieve connection")
@@ -44,13 +50,13 @@ func (s *SFTPUpload) Run(ctx context.Context, logger gornir.Logger, host *gornir
 	}
 	defer client.Close()
 
-	dstFile, err := client.Create(s.Dst)
+	dstFile, err := client.Create(t.Dst)
 	if err != nil {
 		return &SFTPUploadResult{}, errors.Wrap(err, "failed to create destination file")
 	}
 	defer dstFile.Close()
 
-	srcFile, err := os.Open(s.Src)
+	srcFile, err := os.Open(t.Src)
 	if err != nil {
 		return &SFTPUploadResult{}, errors.Wrap(err, "failed to open source file")
 	}

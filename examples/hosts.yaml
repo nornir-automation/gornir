@@ -28,3 +28,9 @@ dev5.no_group:
     hostname: dev5.no_group
     username: root
     password: WRONG!!!
+
+dev6.no_group:
+    port: 22
+    hostname: dev6.no_group
+    username: root
+    password: docker

@@ -5,7 +5,6 @@ package gornir
 import (
 	"context"
 	"reflect"
-	"runtime"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -13,23 +12,28 @@ import (
 
 // Gornir is the main object that glues everything together
 type Gornir struct {
-	Inventory *Inventory // Inventory for the object
-	Logger    Logger     // Logger for the object
-	Runner    Runner     // Runner that will be used to run the task
+	Inventory  *Inventory // Inventory for the object
+	Logger     Logger     // Logger for the object
+	Runner     Runner     // Runner that will be used to run the task
+	Processors Processors // Processors to be used during the execution
+	uuid       string     // uuid is a unique identifier used across the logs to match events
 }
 
 // New is a Gornir constructor. It is currently no different that new,
 // however is a placeholder for any future defaults.
 func New() *Gornir {
-	return new(Gornir)
+	return &Gornir{
+		Processors: make(Processors, 0),
+	}
 }
 
 // Clone returns a new instance of Gornir with the same attributes as the receiver
 func (gr *Gornir) Clone() *Gornir {
 	return &Gornir{
-		Inventory: gr.Inventory,
-		Logger:    gr.Logger,
-		Runner:    gr.Runner,
+		Inventory:  gr.Inventory,
+		Logger:     gr.Logger,
+		Runner:     gr.Runner,
+		Processors: gr.Processors,
 	}
 }
 
@@ -63,46 +67,119 @@ func (gr *Gornir) WithLogger(l Logger) *Gornir {
 	return c
 }
 
+// WithProcessors returns a clone of the current Gornir but with the given Processors
+func (gr *Gornir) WithProcessors(p Processors) *Gornir {
+	c := gr.Clone()
+	c.Processors = p
+	return c
+}
+
+// WithProcessor returns a clone of the current Gornir but with the given Processor appended to the existing ones
+func (gr *Gornir) WithProcessor(p Processor) *Gornir {
+	c := gr.Clone()
+	c.Processors = append(c.Processors, p)
+	return c
+}
+
+// WithUUID returns a clone of the current Gornir but with the given UUID set. If not
+// specifically set gornir will generate one dynamically on each Run
+func (gr *Gornir) WithUUID(u string) *Gornir {
+	c := gr.Clone()
+	c.uuid = u
+	return c
+}
+
+// UUID returns either the user defined uuid (if set) or a randomized one
+func (gr *Gornir) UUID() string {
+	if gr.uuid == "" {
+		return uuid.New().String()
+	}
+	return gr.uuid
+}
+
 // RunSync will execute the task over the hosts in the inventory using the given runner.
 // This function will block until all the tasks are completed.
-func (gr *Gornir) RunSync(task Task) (chan *JobResult, error) {
-	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
+// Note: It is up to the underlying task to check if the context is done
+func (gr *Gornir) RunSync(ctx context.Context, task Task) (chan *JobResult, error) {
+	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
+
 	results := make(chan *JobResult, len(gr.Inventory.Hosts))
 	defer close(results)
+
+	if err := gr.Processors.TaskStarted(context.Background(), logger, task); err != nil {
+		err = errors.Wrap(err, "problem running TaskStart")
+		logger.Error(err.Error())
+		return results, err
+	}
+
 	err := gr.Runner.Run(
-		context.Background(),
+		ctx,
 		logger,
+		gr.Processors,
 		task,
 		gr.Inventory.Hosts,
 		results,
 	)
 	if err != nil {
-		return results, errors.Wrap(err, "problem calling runner")
+		err = errors.Wrap(err, "problem calling runner")
+		logger.Error(err.Error())
+		return results, err
 	}
 	if err := gr.Runner.Wait(); err != nil {
-		return results, errors.Wrap(err, "problem waiting for runner")
+		err = errors.Wrap(err, "problem waiting for runner")
+		logger.Error(err.Error())
+		return results, err
 	}
+
+	if err := gr.Processors.TaskCompleted(context.Background(), logger, task); err != nil {
+		err = errors.Wrap(err, "problem running TaskCompleted")
+		logger.Error(err.Error())
+		return results, err
+	}
+
 	return results, nil
 }
 
 // RunAsync will execute the task over the hosts in the inventory using the given runner.
 // This function doesn't block, the user can use the method Runnner.Wait instead.
-// It's also up to the user to ennsure the channel is closed
+// It's also up to the user to ensure the channel is closed and that Processors.TaskCompleted is called
+// Note: It is up to the underlying task to check if the context is done
 func (gr *Gornir) RunAsync(ctx context.Context, task Task, results chan *JobResult) error {
-	logger := gr.Logger.WithField("ID", uuid.New().String()).WithField("runFunc", getFunctionName(task))
+	logger := gr.Logger.WithField("ID", gr.UUID()).WithField("runFunc", getTaskName(task))
+
+	if err := gr.Processors.TaskStarted(ctx, logger, task); err != nil {
+		err = errors.Wrap(err, "problem running TaskStart")
+		logger.Error(err.Error())
+		return err
+	}
+
 	err := gr.Runner.Run(
 		ctx,
 		logger,
+		gr.Processors,
 		task,
 		gr.Inventory.Hosts,
 		results,
 	)
 	if err != nil {
-		return errors.Wrap(err, "problem calling runner")
+		err = errors.Wrap(err, "problem calling runner")
+		logger.Error(err.Error())
+		return err
 	}
+
+	if err := gr.Processors.TaskCompleted(ctx, logger, task); err != nil {
+		err = errors.Wrap(err, "problem running TaskCompleted")
+		logger.Error(err.Error())
+		return err
+	}
+
 	return nil
 }
 
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+func getTaskName(i interface{}) string {
+	t := reflect.TypeOf(i)
+	if t.Kind() == reflect.Ptr {
+		return t.Elem().Name()
+	}
+	return t.Name()
 }

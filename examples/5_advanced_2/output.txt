@@ -39,3 +39,13 @@ OK: dev4.group_2:
   - connection closed
 
 ERROR: dev5.no_group: failed to dial: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain
+OK: dev6.no_group:
+  - connection opened
+  - stdout: dev6.no_group
+
+  - stderr: 
+  - stdout: 10.21.33.106/24
+
+  - stderr: 
+  - connection closed
+

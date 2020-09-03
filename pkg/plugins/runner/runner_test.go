@@ -11,6 +11,10 @@ type testTaskSleep struct {
 	sleepDuration time.Duration
 }
 
+func (t *testTaskSleep) Metadata() *gornir.TaskMetadata {
+	return nil
+}
+
 type testTaskSleepResults struct {
 	success bool
 }
