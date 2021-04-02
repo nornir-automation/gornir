@@ -18,7 +18,7 @@ type SSH struct {
 }
 
 // Close closes the connection
-func (s *SSH) Close() error {
+func (s *SSH) Close(context.Context) error {
 	return s.Client.Close()
 }
 
@@ -95,7 +95,7 @@ func (t *SSHClose) Run(ctx context.Context, logger gornir.Logger, host *gornir.H
 	}
 	sshConn := conn.(*SSH)
 
-	if err := sshConn.Close(); err != nil {
+	if err := sshConn.Close(ctx); err != nil {
 		return &SSH{}, errors.Wrap(err, "failed to close client")
 	}
 	return &SSH{}, nil
