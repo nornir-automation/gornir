@@ -11,7 +11,6 @@ require (
 	github.com/pkg/sftp v1.10.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/crypto v0.17.0
 	gopkg.in/yaml.v2 v2.2.2
 )
